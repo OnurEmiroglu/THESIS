@@ -3,8 +3,8 @@
     "tasks": [
         {
             "label": "Build thesis (DOCX)",
-            "type": "process",
-            "command": "powershell.exe",
+            "type": "shell",
+            "command": "pwsh",
             "args": [
                 "-NoProfile",
                 "-ExecutionPolicy",
@@ -12,7 +12,8 @@
                 "-File",
                 "${workspaceFolder}\\manuscript\\build.ps1"
             ],
-            "problemMatcher": []
+            "problemMatcher": [],
+            "group": "build"
         }
     ]
 }
