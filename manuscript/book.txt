@@ -1,0 +1,8 @@
+chapters/00-front-matter.md
+chapters/01-introduction.md
+chapters/02-literature.md
+chapters/03-methodology.md
+chapters/04-experiments.md
+chapters/05-results.md
+chapters/06-conclusion.md
+chapters/99-appendix.md
