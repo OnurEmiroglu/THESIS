@@ -1,0 +1,6 @@
+{
+  "project": "thesis-hfmm",
+  "seed": 123,
+  "run_tag": "wp0-smoke",
+  "n_steps": 200
+}

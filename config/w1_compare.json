@@ -1,5 +1,5 @@
 {
-  "job": "w1_naive_sweep",
+  "job": "w1_compare",
   "seed": 123,
   "market": {
     "mid0": 100.0,
@@ -18,5 +18,11 @@
   },
   "sweep": {
     "half_spreads_ticks": [1, 2, 3, 4, 5]
+  },
+  "as": {
+    "gamma": 0.01,
+    "horizon_steps": 8000,
+    "min_delta_ticks": 1,
+    "max_delta_ticks": 25
   }
 }
