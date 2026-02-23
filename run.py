@@ -6,6 +6,7 @@ from src.w0_smoke import wp0_smoke
 from src.w1_naive_sweep import job_entry as w1_naive_sweep
 from src.w1_as_baseline import job_entry as w1_as_baseline
 from src.w1_compare import job_entry as w1_compare
+from src.wp2.job_w2_synth import job_entry as w2_synth
 
 
 
@@ -37,6 +38,8 @@ def main():
             w1_as_baseline(cfg, ctx)
         elif job == "w1_compare":
             w1_compare(cfg, ctx)
+        elif job == "w2_synth":
+            w2_synth(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 
