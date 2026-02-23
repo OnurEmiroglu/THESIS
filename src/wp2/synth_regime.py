@@ -116,6 +116,7 @@ def assign_regime_hat(
 def run_wp2(
     cfg: dict,
     seed: int,
+    ctx=None,
 ) -> tuple[pd.DataFrame, float, float]:
     rng = np.random.default_rng(seed)
 
@@ -157,5 +158,9 @@ def run_wp2(
     out_dir = Path("data/processed")
     out_dir.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_dir / "wp2_synth.csv", index=False)
+
+    if ctx is not None and hasattr(ctx, "run_dir"):
+        snapshot_path = Path(ctx.run_dir) / "wp2_synth_snapshot.csv"
+        df.to_csv(snapshot_path, index=False)
 
     return df, thresh_LM, thresh_MH

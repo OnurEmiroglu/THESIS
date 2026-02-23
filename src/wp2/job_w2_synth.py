@@ -126,7 +126,7 @@ def job_entry(cfg: dict, ctx) -> None:
     seed = int(cfg["seed"])
     warmup_end = int(cfg["regime"]["warmup_steps"])
 
-    df, thresh_LM, thresh_MH = run_wp2(cfg, seed)
+    df, thresh_LM, thresh_MH = run_wp2(cfg, seed, ctx=ctx)
 
     # --- Detection accuracy (post-warmup) ---
     post = df[df["t"] >= warmup_end].copy()
