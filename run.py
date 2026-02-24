@@ -7,6 +7,7 @@ from src.w1_naive_sweep import job_entry as w1_naive_sweep
 from src.w1_as_baseline import job_entry as w1_as_baseline
 from src.w1_compare import job_entry as w1_compare
 from src.wp2.job_w2_synth import job_entry as w2_synth
+from src.w3_sanity import job_entry as w3_sanity
 
 
 
@@ -40,6 +41,8 @@ def main():
             w1_compare(cfg, ctx)
         elif job == "w2_synth":
             w2_synth(cfg, ctx)
+        elif job == "w3_sanity":
+            w3_sanity(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 
