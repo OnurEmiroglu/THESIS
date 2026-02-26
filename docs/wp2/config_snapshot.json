@@ -1,0 +1,41 @@
+{
+  "job": "w2_synth",
+  "seed": 123,
+  "run_tag": "wp2-synth",
+  "market": {
+    "mid0": 100.0,
+    "tick_size": 0.01,
+    "dt": 0.2
+  },
+  "regime": {
+    "sigma_mid_ticks_base": 0.8,
+    "sigma_mult": [
+      0.5,
+      1.0,
+      2.0
+    ],
+    "rv_window": 50,
+    "warmup_steps": 1000,
+    "trans_matrix": [
+      [
+        0.9967,
+        0.0023,
+        0.001
+      ],
+      [
+        0.0042,
+        0.9917,
+        0.0041
+      ],
+      [
+        0.001,
+        0.003,
+        0.996
+      ]
+    ]
+  },
+  "episode": {
+    "n_steps": 10000
+  },
+  "run_id": "20260223-153347_seed123_wp2-synth_87dca03"
+}

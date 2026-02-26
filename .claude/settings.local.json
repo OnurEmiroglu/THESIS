@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd C:/Users/onure/Desktop/THESIS && source .venv/Scripts/activate && python run.py --config config/w2_synth.json 2>)",
+      "Bash(cd C:/Users/onure/Desktop/THESIS && python run.py --config config/w2_synth.json 2>&1)",
+      "Bash(cd:*)",
+      "Bash(tail:*)",
+      "Bash(ruff check:*)",
+      "Bash(source:*)",
+      "Bash(python:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

@@ -76,14 +76,23 @@ class MMEnv(gymnasium.Env):
         """Reset env; optionally inject exogenous series via *options*."""
         super().reset(seed=seed)
 
-        s = seed if seed is not None else self.seed_val
-        self._sim = MMSimulator(self.market, self.execp, seed=s)
+        # Derive a sim seed: use explicit seed if given, else sample from
+        # the Gymnasium-managed np_random (seeded by super().reset).
+        if seed is not None:
+            sim_seed = seed
+        else:
+            sim_seed = int(self.np_random.integers(0, 2**31 - 1))
+
+        self._sim = MMSimulator(self.market, self.execp, seed=sim_seed)
         self._state = self._sim.reset()
         self._t = 0
 
+        # Update exog only when explicitly provided; otherwise keep previous.
         if options and "exog" in options:
             self._exog = options["exog"]
-            # override initial mid from exogenous series
+
+        # If exog series is available, override initial mid from it.
+        if self._exog is not None:
             self._state = MMState(
                 t=0,
                 mid=float(self._exog["mid"].iloc[0]),
@@ -91,8 +100,6 @@ class MMEnv(gymnasium.Env):
                 inv=0,
             )
             self._sim._mid_hist = [self._state.mid]
-        else:
-            self._exog = None
 
         obs = self._get_obs()
         info = {"equity": self._state.equity, "inv": self._state.inv}

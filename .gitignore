@@ -42,3 +42,5 @@ manuscript/build/
 *.log
 
 
+results/runs/*
+!results/runs/.gitkeep

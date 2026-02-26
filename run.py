@@ -8,6 +8,9 @@ from src.w1_as_baseline import job_entry as w1_as_baseline
 from src.w1_compare import job_entry as w1_compare
 from src.wp2.job_w2_synth import job_entry as w2_synth
 from src.w3_sanity import job_entry as w3_sanity
+from src.wp4.job_w4_ppo import job_entry as w4_ppo
+from src.wp5.job_w5_eval import job_entry as w5_eval
+from src.wp5.job_w5_ablation_eta import job_entry as w5_ablation_eta
 
 
 
@@ -43,6 +46,12 @@ def main():
             w2_synth(cfg, ctx)
         elif job == "w3_sanity":
             w3_sanity(cfg, ctx)
+        elif job == "w4_ppo":
+            w4_ppo(cfg, ctx)
+        elif job == "w5_eval":
+            w5_eval(cfg, ctx)
+        elif job == "w5_ablation_eta":
+            w5_ablation_eta(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 
