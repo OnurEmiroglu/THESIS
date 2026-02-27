@@ -56,8 +56,11 @@ REGIMES = ["L", "M", "H"]
 REGIME_COLORS = {"L": "#4CAF50", "M": "#FF9800", "H": "#F44336"}
 
 
+STRATEGIES = ["AS", "naive", "ppo_aware", "ppo_blind"]
+
+
 def _grouped_bar(ax, agg: pd.DataFrame, val_col: str, err_col: str, title: str):
-    strategies = agg["strategy"].unique()
+    strategies = STRATEGIES
     x = np.arange(len(strategies))
     width = 0.25
     for i, reg in enumerate(REGIMES):
@@ -103,18 +106,18 @@ def plot_m_by_regime(df: pd.DataFrame, out: Path):
 def plot_ph5_by_regime(df: pd.DataFrame, out: Path):
     df_seed = _seed_level_stats(df)
     agg = (df_seed.groupby(["strategy", "regime_hat"])["ph5"]
-             .mean().rename("ph5").reset_index())
-    strategies = agg["strategy"].unique()
-    x = np.arange(len(strategies))
+             .agg(ph5="mean", std_ph5="std").reset_index())
+    x = np.arange(len(STRATEGIES))
     width = 0.25
     fig, ax = plt.subplots(figsize=(7, 4))
     for i, reg in enumerate(REGIMES):
         sub = agg[agg["regime_hat"] == reg]
-        vals = [sub.loc[sub["strategy"] == s, "ph5"].values[0] for s in strategies]
-        ax.bar(x + i * width, vals, width, label=reg,
-               color=REGIME_COLORS[reg])
+        vals = [sub.loc[sub["strategy"] == s, "ph5"].values[0] for s in STRATEGIES]
+        errs = [sub.loc[sub["strategy"] == s, "std_ph5"].values[0] for s in STRATEGIES]
+        ax.bar(x + i * width, vals, width, yerr=errs, label=reg,
+               color=REGIME_COLORS[reg], capsize=3)
     ax.set_xticks(x + width)
-    ax.set_xticklabels(strategies)
+    ax.set_xticklabels(STRATEGIES)
     ax.set_ylabel("P(h=5)")
     ax.set_title("P(h=5 | Regime) — Undertrading Indicator")
     ax.legend(title="Regime")
