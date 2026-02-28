@@ -100,6 +100,7 @@ def job_entry(cfg: dict, ctx) -> None:
             cfg_tr = copy.deepcopy(cfg)
             cfg_tr["wp3"]["use_regime"] = use_regime
             cfg_tr["episode"] = {**cfg_tr["episode"], "n_steps": n_train}
+            cfg_tr["as"]["horizon_steps"] = n_train
 
             env_tr = MMEnv(cfg_tr)
             env_tr.reset(seed=seed, options={"exog": exog_train})
@@ -135,6 +136,7 @@ def job_entry(cfg: dict, ctx) -> None:
             c = copy.deepcopy(cfg)
             c["episode"] = {**c["episode"], "n_steps": n_test}
             c["wp3"]["use_regime"] = use_regime
+            c["as"]["horizon_steps"] = n_test
             return c
 
         strategies = {
