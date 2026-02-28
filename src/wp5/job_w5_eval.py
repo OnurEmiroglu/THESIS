@@ -166,7 +166,7 @@ def job_entry(cfg: dict, ctx) -> None:
                     action = np.array([naive_h - 1, naive_m + 2])
                 elif strat_name == "AS":
                     db, da = as_deltas_ticks(
-                        env_ev._state.mid, env_ev._state.inv, t, cfg, market, execp,
+                        env_ev._state.mid, env_ev._state.inv, t, cfg_ev, market, execp,
                     )
                     h_as = int(np.clip((db + da) // 2, 1, 5))
                     m_as = int(np.clip((db - da) // 2, -2, 2))
