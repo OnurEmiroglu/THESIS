@@ -1,0 +1,39 @@
+{
+  "job": "w5_ablation_skew",
+  "seed": 1,
+  "run_tag": "wp5-ablation-skew",
+  "market": {"mid0": 100.0, "tick_size": 0.01, "dt": 0.2, "sigma_mid_ticks": 0.8},
+  "exec": {"A": 5.0, "k": 1.5, "fee_bps": 0.2, "latency_steps": 1},
+  "episode": {"n_steps": 8000, "inv_max_clip": 50},
+  "wp3": {"eta": 0.001, "use_regime": true, "skew_penalty_c": 0.0},
+  "as": {"gamma": 0.01, "horizon_steps": 8000, "min_delta_ticks": 1, "max_delta_ticks": 25},
+  "sweep": {"half_spreads_ticks": [1, 2, 3, 4, 5]},
+  "regime": {
+    "rv_window": 50,
+    "warmup_steps": 1000,
+    "sigma_mid_ticks_base": 0.8,
+    "sigma_mult": [0.6, 1.0, 1.8],
+    "trans_matrix": [
+      [0.9967, 0.0023, 0.0010],
+      [0.0042, 0.9917, 0.0041],
+      [0.0010, 0.0030, 0.9960]
+    ]
+  },
+  "wp4": {
+    "total_timesteps": 250000,
+    "learning_rate": 0.0003,
+    "n_steps": 2048,
+    "batch_size": 256,
+    "n_epochs": 10,
+    "gamma": 0.999,
+    "gae_lambda": 0.95,
+    "clip_range": 0.2,
+    "ent_coef": 0.01
+  },
+  "wp5": {
+    "seeds": [1, 2, 3, 4, 5],
+    "train_frac": 0.7,
+    "naive": {"h": 2, "m": 0},
+    "skew_c_values": [0, 2.5e-5, 5e-5, 1e-4, 2e-4]
+  }
+}

@@ -25,6 +25,7 @@ class MMEnv(gymnasium.Env):
 
         wp3 = cfg.get("wp3", {})
         self.eta = float(wp3.get("eta", 0.01))
+        self.skew_penalty_c = float(wp3.get("skew_penalty_c", 0.0))
         self.use_regime = bool(wp3.get("use_regime", True))
         self.seed_val = int(cfg["seed"])
         self.cfg = cfg
@@ -139,7 +140,7 @@ class MMEnv(gymnasium.Env):
         inv_after = self._state.inv
 
         # reward: PnL increment minus inventory penalty
-        reward = (equity_after - equity_before) - self.eta * (inv_after ** 2)
+        reward = (equity_after - equity_before) - self.eta * (inv_after ** 2) - self.skew_penalty_c * abs(m)
 
         terminated = self._t >= self.n_steps
         truncated = False
