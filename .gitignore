@@ -37,6 +37,10 @@ results/logs/*
 
 # ---- Thesis build outputs ----
 manuscript/build/
+unpacked_thesis/
+
+# ---- Node ----
+node_modules/
 
 # ---- Logs ----
 *.log
