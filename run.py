@@ -12,6 +12,7 @@ from src.wp4.job_w4_ppo import job_entry as w4_ppo
 from src.wp5.job_w5_eval import job_entry as w5_eval
 from src.wp5.job_w5_ablation_eta import job_entry as w5_ablation_eta
 from src.wp5.job_w5_ablation_skew import job_entry as w5_ablation_skew
+from src.wp5.job_w5_detector_compare import job_entry as w5_detector_compare
 
 
 
@@ -55,6 +56,8 @@ def main():
             w5_ablation_eta(cfg, ctx)
         elif job == "w5_ablation_skew":
             w5_ablation_skew(cfg, ctx)
+        elif job == "w5_detector_compare":
+            w5_detector_compare(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 

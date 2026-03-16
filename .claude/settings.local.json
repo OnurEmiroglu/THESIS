@@ -8,7 +8,20 @@
       "Bash(ruff check:*)",
       "Bash(source:*)",
       "Bash(python:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(PYTHONIOENCODING=utf-8 python:*)",
+      "Bash(rm:*)",
+      "Bash(pip install:*)",
+      "Bash(python3:*)",
+      "Bash(source .venv/Scripts/activate && pip install \"hmmlearn>=0.3,<1.0\" -q 2>&1 | tail -3)",
+      "Bash(which python:*)"
     ]
   }
 }

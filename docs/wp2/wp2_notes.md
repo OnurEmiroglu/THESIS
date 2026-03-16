@@ -61,3 +61,39 @@ Gözlemlenen expected durations (empirical):
 - **regime_hat kullanılacak, regime_true değil.** Agent'ın state'ine regime_true koymak look-ahead bias yaratır. Gerçek zamanlı tespite dayanan regime_hat kullanılmalı.
 - **Smoothing opsiyonları değerlendirilebilir.** regime_hat'te gürültülü geçişler var; median filter veya minimum-duration-in-regime gibi post-processing adımları denenebilir.
 - **Ablation zorunlu.** State vektöründe regime_hat var vs yok karşılaştırması yapılmalı — rejim bilgisinin agent performansına gerçek katkısını ölçmek için.
+
+## 6. Three Detector Variants
+
+### Detector 1: Rolling RV Baseline (existing)
+- Function: assign_regime_hat
+- Method: rolling std of mid returns over 50-step window, threshold at 33rd/66th percentile of warmup
+- Accuracy: 60.7% (post-warmup, seed=123)
+
+### Detector 2: RV + Dwell Filter
+- Function: assign_regime_hat_dwell
+- Method: rolling RV baseline + post-processing dwell filter (min_dwell=5 steps)
+- Any regime transition shorter than min_dwell steps is suppressed
+- Accuracy: 60.4% — minimal change because regimes are already sticky
+- Key insight: dwell filter has little effect when transition matrix is already strongly diagonal
+
+### Detector 3: HMM (GaussianHMM)
+- Function: assign_regime_hat_hmm
+- Method: GaussianHMM with 3 states, fit on sigma_hat series during warmup only (no look-ahead)
+- State mapping: sort states by emission variance → lowest=L, middle=M, highest=H
+- Causal prediction: at each step t >= warmup_end, predict on sigma_hat[warmup_end:t+1]
+- Accuracy: 81.8% — significant improvement over rolling RV
+- Key insight: fitting on sigma_hat (smoothed signal) rather than raw returns is critical; raw returns gave only 45.8%
+
+## 7. Detector Robustness Rationale
+
+Goal: show that aware vs blind result is robust to detector choice.
+If null result holds across all three detectors (including HMM at 81.8%), the argument becomes:
+"The performance gap is not attributable to detector quality, but to a fundamental redundancy:
+sigma_hat is already in the observation space, so the explicit regime label adds no learnable signal."
+
+Pilot results (3 seeds, mean sharpe_like):
+- rv_baseline: aware=0.850, blind=0.814
+- rv_dwell:    aware=0.804, blind=0.814
+- hmm:         aware=0.713, blind=0.814
+
+Full experiment: 3 detectors x 20 seeds currently running (w5_detector_full.json)

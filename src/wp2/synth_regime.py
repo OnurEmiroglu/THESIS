@@ -113,6 +113,107 @@ def assign_regime_hat(
     return regime_hat
 
 
+def apply_dwell_filter(
+    regime_labels: list[str],
+    min_dwell: int = 5,
+) -> list[str]:
+    """Replace regime runs shorter than *min_dwell* with the previous regime.
+
+    "warmup" labels pass through unchanged and are not counted as regime runs.
+    """
+    out = list(regime_labels)
+    n = len(out)
+
+    # Identify contiguous runs of non-warmup labels
+    i = 0
+    while i < n:
+        if out[i] == "warmup":
+            i += 1
+            continue
+        # start of a run
+        j = i + 1
+        while j < n and out[j] == out[i]:
+            j += 1
+        run_len = j - i
+        if run_len < min_dwell:
+            # find the previous non-warmup label (fall back to current if none)
+            prev = out[i]
+            for k in range(i - 1, -1, -1):
+                if out[k] != "warmup":
+                    prev = out[k]
+                    break
+            for k in range(i, j):
+                out[k] = prev
+        i = j
+    return out
+
+
+def assign_regime_hat_dwell(
+    sigma_hat: np.ndarray,
+    thresh_LM: float,
+    thresh_MH: float,
+    warmup_end: int,
+    min_dwell: int = 5,
+) -> list[str]:
+    """Threshold-based regime detection followed by a dwell filter."""
+    raw = assign_regime_hat(sigma_hat, thresh_LM, thresh_MH, warmup_end)
+    return apply_dwell_filter(raw, min_dwell)
+
+
+def assign_regime_hat_hmm(
+    sigma_hat: np.ndarray,
+    warmup_end: int,
+    n_states: int = 3,
+    seed: int = 0,
+) -> list[str]:
+    """HMM-based regime detection (GaussianHMM on rolling sigma_hat).
+
+    * Fits on non-NaN sigma_hat values up to *warmup_end* (no look-ahead).
+    * Predicts causally: at each step t >= warmup_end the model uses only
+      sigma_hat[warmup_end:t+1], dropping any leading NaNs.
+    * Maps HMM states to L/M/H by emission variance (lowest → L, highest → H).
+    """
+    from hmmlearn.hmm import GaussianHMM
+
+    n = len(sigma_hat)
+    labels: list[str] = ["warmup"] * n
+
+    # --- Fit on warmup data, dropping NaNs ---
+    train = sigma_hat[:warmup_end]
+    train = train[~np.isnan(train)].reshape(-1, 1)
+
+    if len(train) < 2:
+        return labels
+
+    model = GaussianHMM(
+        n_components=n_states,
+        covariance_type="diag",
+        n_iter=100,
+        random_state=seed,
+    )
+    model.fit(train)
+
+    # --- Map HMM states to L/M/H by ascending variance ---
+    variances = model.covars_.flatten()
+    order = np.argsort(variances)  # lowest var first
+    state_map = {}
+    regime_names = ["L", "M", "H"]
+    for rank, state_idx in enumerate(order):
+        state_map[state_idx] = regime_names[rank]
+
+    # --- Causal prediction: expand window one step at a time ---
+    for t in range(warmup_end, n):
+        window = sigma_hat[warmup_end : t + 1]
+        valid = window[~np.isnan(window)]
+        if len(valid) == 0:
+            continue
+        obs = valid.reshape(-1, 1)
+        hidden = model.predict(obs)
+        labels[t] = state_map[hidden[-1]]
+
+    return labels
+
+
 def run_wp2(
     cfg: dict,
     seed: int,
