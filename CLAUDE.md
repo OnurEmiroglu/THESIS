@@ -92,7 +92,7 @@ ruff check src/
   - `q_norm = clip(inv, -inv_max_clip, inv_max_clip) / inv_max_clip`
   - `sigma_hat`: rolling realized volatility from exogenous series (0.0 if unavailable)
   - `tau = (n_steps - t) / n_steps`
-  - regime one-hot: zeros if `use_regime=False` or `regime_hat=="warmup"`
+  - regime one-hot: zeros if `use_regime=False`; during warmup, `regime_hat=="warmup"` is treated as `"M"` producing `[0,1,0]` (see known limitation below)
 - **Action space:** `MultiDiscrete([5, 5])`
   - `h_idx in {0..4}` -> `h = h_idx + 1` (half-spread ticks: 1..5)
   - `m_idx in {0..4}` -> `m = m_idx - 2` (skew: -2..2)
