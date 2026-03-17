@@ -110,6 +110,7 @@ def job_entry(cfg: dict, ctx) -> None:
         monitor = Monitor(env)
         vec_env = DummyVecEnv([lambda _m=monitor: _m])
 
+        device = cfg.get("wp4", {}).get("device", "cpu")
         model = PPO(
             "MlpPolicy",
             vec_env,
@@ -123,7 +124,7 @@ def job_entry(cfg: dict, ctx) -> None:
             clip_range=float(wp4["clip_range"]),
             ent_coef=float(wp4["ent_coef"]),
             verbose=1,
-            device="cuda",
+            device=device,
         )
 
         model.learn(total_timesteps=int(wp4["total_timesteps"]))

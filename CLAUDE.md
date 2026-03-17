@@ -30,7 +30,7 @@ python run.py --config config/w1_as_baseline.json       # WP1 Avellaneda-Stoikov
 python run.py --config config/w1_compare.json           # WP1 naive vs AS comparison
 python run.py --config config/w2_synth.json             # WP2 synthetic regime detection
 python run.py --config config/w3_sanity.json            # WP3 sanity check (regime-aware)
-python run.py --config config/w3_sanity_blind.json      # WP3 sanity check (regime-blind)
+python run.py --config config/w3_sanity_both.json       # WP3 sanity check (runs both aware + blind)
 python run.py --config config/w4_ppo.json               # WP4 PPO training (aware + blind)
 python run.py --config config/w5_main.json              # WP5 main OOS eval (20 seeds, 1M ts)
 python run.py --config config/w5_eval.json              # WP5 OOS eval (3 seeds, 200k ts)
@@ -126,7 +126,7 @@ Three detector variants:
 | `w1_compare.json` | `w1_compare` | Naive vs AS comparison |
 | `w2_synth.json` | `w2_synth` | Synthetic regime generation + detection |
 | `w3_sanity.json` | `w3_sanity` | Sanity check (regime-aware) |
-| `w3_sanity_blind.json` | `w3_sanity` | Sanity check (regime-blind) |
+| `w3_sanity_both.json` | `w3_sanity` | Sanity check (runs both aware + blind via job_entry) |
 | `w4_ppo.json` | `w4_ppo` | PPO training |
 | `w5_main.json` | `w5_eval` | Main OOS eval (20 seeds, 1M timesteps) |
 | `w5_eval.json` | `w5_eval` | OOS eval (3 seeds, 200k timesteps) |

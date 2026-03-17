@@ -6,7 +6,7 @@
 
 **Araştırma sorusu:** Rejim-farkında (aware) PPO agent, rejim-kör (blind) PPO agent'tan anlamlı şekilde daha iyi performans gösterir mi?
 
-**Mevcut bulgu:** Null result — istatistiksel olarak anlamlı fark yok (p=0.261, Sharpe bazlı paired t-test, 20 seed, rv_baseline detector). Pilot (3 seed) üç detector varyantında da null result gözlemlendi; full experiment (3 detector x 20 seed) devam ediyor. Her iki PPO varyantı Sharpe bazında klasik baseline'ları ~4x geçiyor; ancak equity bazında AS, PPO'lardan daha yüksek mutlak equity üretiyor.
+**Mevcut bulgu:** Null result — istatistiksel olarak anlamlı fark yok (p=0.261, Sharpe bazlı paired t-test, 20 seed, rv_baseline detector). Pilot (3 seed) üç detector varyantında da null result gözlemlendi; full experiment (3 detector x 20 seed) devam ediyor. PPO varyantları Sharpe bazında naive'i geçiyor (~0.85 vs ~0.75) ve AS ile yakın performans gösteriyor (~0.85); ancak equity bazında AS, PPO'lardan daha yüksek mutlak equity üretiyor.
 
 **Üniversite:** KIT (Karlsruhe Institute of Technology), Financial Engineering MSc Thesis.
 
@@ -221,7 +221,7 @@ R_t = (equity_after - equity_before) - eta * inv_after^2 - skew_penalty_c * |m|
 
 **Ana sonuçlar (20 seed):**
 - Naive ve AS: düşük Sharpe
-- PPO-aware ve PPO-blind: ~4x Sharpe artışı
+- PPO-aware (~0.85) ve PPO-blind (~0.81): naive'i geçiyor, AS ile yakın
 - Aware vs blind farkı: p=0.261 (Sharpe), p=0.023 (equity, blind lehine)
 
 ### 10b. Eta Ablasyonu (`src/wp5/job_w5_ablation_eta.py`)
@@ -260,7 +260,7 @@ R_t = (equity_after - equity_before) - eta * inv_after^2 - skew_penalty_c * |m|
 Her iki PPO varyantı da `sigma_hat`'ı observation'da alıyor (index 1). Rejim one-hot'ı (index 3-5) sadece sigma_hat'ın kaba bir ayrıklaştırılmış hali. Agent zaten sigma_hat'tan volatilite bilgisini öğreniyor — discrete rejim etiketi ek sinyal taşımıyor.
 
 ### Sharpe vs Equity ayrımı
-- Sharpe bazında PPO varyantları baseline'ları ~4x geçiyor
+- Sharpe bazında PPO varyantları naive'i geçiyor (~0.85 vs ~0.75), AS ile yakın (~0.85)
 - Ancak equity bazında AS daha yüksek mutlak equity üretiyor — PPO'lar risk-adjusted performansta üstün ama toplam PnL'de AS'nin gerisinde kalabiliyor
 - Bu fark, PPO'nun inventory penalty (eta) nedeniyle daha konservatif pozisyon almasından kaynaklanıyor
 
@@ -303,7 +303,7 @@ Her iki PPO varyantı da `sigma_hat`'ı observation'da alıyor (index 1). Rejim 
 | `w1_compare.json` | `w1_compare` | Naive vs AS |
 | `w2_synth.json` | `w2_synth` | Sentetik rejim üretimi |
 | `w3_sanity.json` | `w3_sanity` | Sanity check (aware) |
-| `w3_sanity_blind.json` | `w3_sanity` | Sanity check (blind) |
+| `w3_sanity_both.json` | `w3_sanity` | Sanity check (runs both aware + blind via job_entry) |
 | `w4_ppo.json` | `w4_ppo` | PPO eğitimi |
 | `w5_main.json` | `w5_eval` | Ana OOS eval (20 seed, 1M ts) |
 | `w5_eval.json` | `w5_eval` | OOS eval (3 seed, 200k ts) |

@@ -43,7 +43,7 @@ python -m src.wp2.compare_detectors
 ```
 
 ## Key Results
-- Both PPO variants outperform classical baselines in Sharpe (~4x); AS produces higher absolute equity
+- PPO variants outperform naive baseline in Sharpe (~0.85 vs ~0.75) and are comparable to AS (~0.85); AS produces higher absolute equity
 - Regime-aware vs regime-blind: null result (p=0.261 Sharpe-based paired t-test, 20 seeds)
 - Pilot (3 seeds): null result observed across all three detector variants
 - Full detector robustness experiment: 3 detectors x 20 seeds x 2 strategies = 120 models (in progress)
