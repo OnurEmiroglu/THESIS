@@ -165,7 +165,7 @@ def job_entry(cfg: dict, ctx) -> None:
 
     # 6) Save results
     df_out = pd.DataFrame(rows)
-    df_out.to_csv(out_dir / "metrics_detector_compare.csv", index=False)
+    df_out.to_csv(out_dir / "metrics_detector_pilot.csv", index=False)
 
     # 7) Summary table: mean sharpe_like by detector x strategy
     summary = (
