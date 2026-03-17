@@ -4,7 +4,7 @@ KIT Financial Engineering MSc Thesis
 
 ## Research Question
 Does a regime-aware PPO market-making agent outperform a regime-blind PPO agent?
-Current finding: null result — difference is statistically inconclusive across all detector variants.
+Current finding: null result — difference is statistically inconclusive (rv_baseline, 20 seeds). Pilot (3 seeds) shows null result across all three detector variants; full experiment (3 detectors x 20 seeds) in progress.
 
 ## Structure
 - `src/` — all Python source code
@@ -43,10 +43,10 @@ python -m src.wp2.compare_detectors
 ```
 
 ## Key Results
-- Both PPO variants dramatically outperform classical baselines (~4x Sharpe)
-- Regime-aware vs regime-blind: null result (p=0.261 Sharpe-based paired t-test)
-- Null result holds across all three detector variants (pilot: 3 seeds)
-- Full detector robustness experiment: 3 detectors x 20 seeds (in progress)
+- Both PPO variants outperform classical baselines in Sharpe (~4x); AS produces higher absolute equity
+- Regime-aware vs regime-blind: null result (p=0.261 Sharpe-based paired t-test, 20 seeds)
+- Pilot (3 seeds): null result observed across all three detector variants
+- Full detector robustness experiment: 3 detectors x 20 seeds x 2 strategies = 120 models (in progress)
 
 ## Reproducibility
 Every run produces a timestamped directory under results/runs/ containing:

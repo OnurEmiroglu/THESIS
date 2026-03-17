@@ -6,7 +6,7 @@
 
 **Araştırma sorusu:** Rejim-farkında (aware) PPO agent, rejim-kör (blind) PPO agent'tan anlamlı şekilde daha iyi performans gösterir mi?
 
-**Mevcut bulgu:** Null result — istatistiksel olarak anlamlı fark yok (p=0.261, Sharpe bazlı paired t-test, 20 seed). Her iki PPO varyantı klasik baseline'ları (naive, AS) ~4x Sharpe ile geçiyor.
+**Mevcut bulgu:** Null result — istatistiksel olarak anlamlı fark yok (p=0.261, Sharpe bazlı paired t-test, 20 seed, rv_baseline detector). Pilot (3 seed) üç detector varyantında da null result gözlemlendi; full experiment (3 detector x 20 seed) devam ediyor. Her iki PPO varyantı Sharpe bazında klasik baseline'ları ~4x geçiyor; ancak equity bazında AS, PPO'lardan daha yüksek mutlak equity üretiyor.
 
 **Üniversite:** KIT (Karlsruhe Institute of Technology), Financial Engineering MSc Thesis.
 
@@ -259,8 +259,13 @@ R_t = (equity_after - equity_before) - eta * inv_after^2 - skew_penalty_c * |m|
 ### Yorumlama
 Her iki PPO varyantı da `sigma_hat`'ı observation'da alıyor (index 1). Rejim one-hot'ı (index 3-5) sadece sigma_hat'ın kaba bir ayrıklaştırılmış hali. Agent zaten sigma_hat'tan volatilite bilgisini öğreniyor — discrete rejim etiketi ek sinyal taşımıyor.
 
+### Sharpe vs Equity ayrımı
+- Sharpe bazında PPO varyantları baseline'ları ~4x geçiyor
+- Ancak equity bazında AS daha yüksek mutlak equity üretiyor — PPO'lar risk-adjusted performansta üstün ama toplam PnL'de AS'nin gerisinde kalabiliyor
+- Bu fark, PPO'nun inventory penalty (eta) nedeniyle daha konservatif pozisyon almasından kaynaklanıyor
+
 ### Olası eleştiri ve cevap
-- "Detector kötü olduğu için aware çalışmıyor" → HMM ile %81.8 accuracy'de bile null result devam ediyor
+- "Detector kötü olduğu için aware çalışmıyor" → Pilot'ta HMM ile %81.8 accuracy'de bile null result gözlemlendi; full experiment (20 seed) ile doğrulanması bekleniyor
 - "Daha çok eğitim lazım" → 1M timesteps, 20 seed, tutarlı sonuç
 - "Eta yanlış" → Ablasyon yapıldı, 3 farklı eta değeri denendi
 

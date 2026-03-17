@@ -100,6 +100,7 @@ ruff check src/
 - **Reward:** `R_t = (W_{t+1} - W_t) - eta * inv_{t+1}^2`
   - Fee already deducted in sim cash update -- do NOT subtract again (double-count)
 - **Exogenous series:** inject via `reset(options={"exog": df})` with columns `mid, sigma_hat, regime_hat`
+- **Warmup behavior (known limitation):** during warmup, exog sigma_hat is NaN so `sh=0.0`, but regime_hat defaults to `"M"` (not a valid L/M/H label but treated as M in `_get_obs`), producing one-hot `[0,1,0]` rather than a zero vector. This means warmup steps receive a non-zero regime signal even though no detection has occurred yet. Documented as a known limitation.
 
 ### Regime detection (`src/wp2/synth_regime.py`)
 
