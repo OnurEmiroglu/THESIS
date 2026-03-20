@@ -1,0 +1,23 @@
+Source: results\runs\20260316-223842_seed1_wp5-detector-full_a67e381\metrics_detector_pilot.csv
+
+PAIRED T-TEST: ppo_aware vs ppo_blind (per detector, per metric)
+   detector       metric mean_aware mean_blind mean_diff  t_stat p_value significant
+        hmm  sharpe_like     0.7186     0.7530   -0.0344 -1.8354  0.0822          No
+        hmm final_equity     4.1341     4.5479   -0.4138 -2.5089  0.0213         Yes
+rv_baseline  sharpe_like     0.7182     0.7530   -0.0348 -1.6560  0.1142          No
+rv_baseline final_equity     4.0154     4.5479   -0.5325 -3.8909  0.0010         Yes
+   rv_dwell  sharpe_like     0.7155     0.7530   -0.0374 -1.6789  0.1095          No
+   rv_dwell final_equity     4.1147     4.5479   -0.4332 -2.7310  0.0133         Yes
+
+==========================================================================================
+ONE-WAY ANOVA: ppo_aware sharpe_like across detectors
+==========================================================================================
+F-stat: 0.0034, p-value: 0.9966, significant: No
+
+
+SUMMARY
+----------------------------------------
+Significant tests (p<0.05): 3 / 6
+  hmm / final_equity: p=0.0213 (blind > aware)
+  rv_baseline / final_equity: p=0.0010 (blind > aware)
+  rv_dwell / final_equity: p=0.0133 (blind > aware)

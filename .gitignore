@@ -39,6 +39,9 @@ results/logs/*
 manuscript/build/
 unpacked_thesis/
 
+# ---- Linter ----
+.ruff_cache/
+
 # ---- Node ----
 node_modules/
 
