@@ -1,4 +1,9 @@
 """WP5 — Detector comparison: rv_baseline vs rv_dwell vs hmm (PPO-aware & PPO-blind)."""
+# Detector Robustness Deneyi (WP5)
+# ----------------------------------
+# 3 dedektör × 20 seed × 2 strateji = 120 model eğitir ve değerlendirir.
+# Dedektörler: rv_baseline (%60.7), rv_dwell (%60.4), HMM (%81.8)
+# Null sonucun dedektör kalitesinden bağımsız olduğunu kanıtlar.
 
 from __future__ import annotations
 

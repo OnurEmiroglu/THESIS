@@ -1,4 +1,8 @@
 """Compare regime detectors on the same synthetic data."""
+# Dedektör Karşılaştırması (WP2)
+# -------------------------------
+# rv_baseline, rv_dwell ve HMM dedektörlerinin tespit doğruluklarını
+# gerçek rejim etiketlerine karşı ölçer ve raporlar.
 
 from __future__ import annotations
 

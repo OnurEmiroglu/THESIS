@@ -1,4 +1,9 @@
 """WP5 action analysis: h/m distributions by regime across strategies."""
+# Eylem Dağılımı Analizi (WP5)
+# ------------------------------
+# PPO ajanlarının rejim bazında half-spread (h) ve skew (m) dağılımlarını analiz eder.
+# Cross-seed standart sapma kullanır (seed-level aggregation).
+# Tez Şekil 3'ü (Action Distribution by Regime) üretir.
 
 from pathlib import Path
 import re

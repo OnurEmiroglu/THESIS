@@ -1,3 +1,23 @@
+"""
+Ana Çalıştırıcı (Dispatcher)
+-----------------------------
+Config JSON dosyasını okur ve ilgili iş paketini (WP) çalıştırır.
+Kullanım: python run.py --config config/<config_dosyasi>.json
+
+İş paketleri (job değeri):
+  w0_smoke          → WP0 smoke test
+  w1_naive_sweep    → WP1 naive sweep
+  w1_as_baseline    → WP1 AS baseline
+  w1_compare        → WP1 karşılaştırma
+  w2_synth          → WP2 sentetik veri üretimi
+  w3_sanity         → WP3 ortam doğrulama
+  w4_ppo            → WP4 PPO eğitimi
+  w5_eval           → WP5 OOS değerlendirme
+  w5_ablation_eta   → WP5 η ablasyon
+  w5_ablation_skew  → WP5 skew penalty ablasyon
+  w5_detector_compare → WP5 detector robustness
+"""
+
 import argparse
 import json
 

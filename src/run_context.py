@@ -1,3 +1,10 @@
+"""Run lifecycle management: context, seeding, logging, and metrics."""
+# Çalıştırma Yaşam Döngüsü (WP0)
+# ----------------------------------
+# Her deneyi benzersiz run_id ile izler, config snapshot ve git bilgisi kaydeder.
+# setup_run() → RunContext oluşturur, finalize_run() → durumu yazar.
+# CSVMetricLogger ile metrikler satır satır CSV'ye eklenir.
+
 from __future__ import annotations
 
 import json
@@ -35,6 +42,8 @@ def get_git_commit_short() -> str:
         return "nogit"
 
 
+# Benzersiz çalıştırma kimliği üretir: YYYYMMDD-HHMMSS_seed<S>_<tag>_<commit>
+# Tekrarlanabilirlik için seed ve git commit hash'i içerir.
 def make_run_id(seed: int, run_tag: Optional[str] = None) -> str:
     """
     run_id format: YYYYMMDD-HHMMSS_seed<seed>_<tag>_<commit>
@@ -111,6 +120,8 @@ class RunContext:
     metrics: CSVMetricLogger
 
 
+# Yeni bir deney çalıştırmasını başlatır: dizin oluşturur, seed ayarlar,
+# config snapshot ve meta bilgilerini kaydeder, logger ve metrics nesnelerini döner.
 def setup_run(config_path: str | Path, results_root: str | Path = "results/runs") -> RunContext:
     config_path = Path(config_path)
     cfg = load_json(config_path)
@@ -156,6 +167,7 @@ def setup_run(config_path: str | Path, results_root: str | Path = "results/runs"
         metrics=metrics,
     )
 
+# Çalıştırmayı sonlandırır: status.json dosyasına başarı/hata durumunu yazar.
 def finalize_run(ctx: RunContext, status: str = "success", error: str | None = None) -> None:
     payload = {
         "run_id": ctx.run_id,

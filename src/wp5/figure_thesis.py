@@ -1,4 +1,12 @@
 """Generate thesis figures from WP5 OOS results."""
+# Tez Figür Üretimi (WP5)
+# -------------------------
+# Tezdeki tüm ana figürleri üretir ve results/plots/thesis/ klasörüne kaydeder:
+# - fig1_sharpe_inv.png: Sharpe ve inv_p99 karşılaştırması
+# - fig2_paired_seed.png: Seed bazında PPO-aware vs PPO-blind scatter
+# - fig3_regime_sharpe.png: Volatilite rejimine göre Sharpe
+# - fig4_detector_robustness.png: Dedektör karşılaştırması
+# - fig5_action_analysis.png: Eylem dağılımı
 
 from pathlib import Path
 import re

@@ -1,3 +1,10 @@
+"""
+WP0 Smoke Test
+--------------
+Projenin temel kurulumunu doğrular: env import, config okuma,
+tek adım simülasyon. CI/CD benzeri basit sağlık kontrolü.
+"""
+
 from __future__ import annotations
 
 try:

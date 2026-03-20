@@ -1,4 +1,10 @@
 """Statistical analysis of detector robustness experiment results."""
+# İstatistiksel Testler — Detector Robustness (WP5)
+# ---------------------------------------------------
+# 120 modelin (3 dedektör × 20 seed × 2 strateji) istatistiksel analizini yapar.
+# - Paired t-test: ppo_aware vs ppo_blind (her dedektör için ayrı)
+# - One-way ANOVA: dedektör seçiminin ppo_aware'e etkisi
+# - Sonuçlar: stats_detector_robustness.txt
 
 from __future__ import annotations
 

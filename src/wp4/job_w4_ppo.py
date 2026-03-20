@@ -1,4 +1,9 @@
 """WP4: PPO training via Stable-Baselines3 on MMEnv."""
+# PPO Eğitimi (WP4)
+# -----------------
+# Stable-Baselines3 ile PPO ajanını eğitir.
+# ppo_aware: rejim one-hot gözlemler, ppo_blind: rejim etiketi almaz.
+# Kronolojik train/test bölünmesi (%70/%30) kullanır.
 
 from __future__ import annotations
 

@@ -1,4 +1,7 @@
 """Gymnasium environment for market-making with MMSimulator backend."""
+# Bu modül, PPO ajanının eğitim ve değerlendirme için kullandığı
+# OpenAI Gymnasium uyumlu piyasa yapıcılığı ortamını tanımlar.
+# Ajan her adımda half-spread (h) ve skew (m) seçer.
 
 from __future__ import annotations
 
@@ -18,6 +21,9 @@ class MMEnv(gymnasium.Env):
         """Initialise spaces and simulation parameters from *cfg*."""
         super().__init__()
 
+        # Piyasa ve emir çalıştırma parametrelerini config'den yükle
+        # Gözlem uzayı 6 boyutlu: [q_norm, sigma_hat, tau, r_L, r_M, r_H]
+        # Eylem uzayı: h_idx(0-4) → h=1..5 tick, m_idx(0-4) → m=-2..+2 tick
         self.market = MarketParams(**cfg["market"])
         self.execp = ExecParams(**cfg["exec"])
         self.n_steps = int(cfg["episode"]["n_steps"])
@@ -45,6 +51,10 @@ class MMEnv(gymnasium.Env):
     # ------------------------------------------------------------------
     def _get_obs(self) -> np.ndarray:
         """Build 6-dim observation vector."""
+        # Normalleştirilmiş envanter: [-1, +1] aralığına kırpılmış
+        # sigma_hat: kayan gerçekleşmiş volatilite tahmini
+        # tau: kalan zaman fraksiyonu (1.0'dan 0.0'a doğru azalır)
+        # r_L, r_M, r_H: aktif rejimin one-hot kodlaması (ppo_blind için hepsi 0)
         q = np.clip(self._state.inv, -self.inv_max_clip, self.inv_max_clip)
         q_norm = q / self.inv_max_clip
 
@@ -110,6 +120,9 @@ class MMEnv(gymnasium.Env):
     def step(self, action):
         """Execute one tick: decode action, run sim, compute reward."""
         h_idx, m_idx = int(action[0]), int(action[1])
+        # Eylem decode: h_idx → half-spread (1-5 tick), m_idx → skew (-2 ile +2 arası)
+        # delta_bid = h + m (en az 1 tick), delta_ask = h - m (en az 1 tick)
+        # Ödül = ΔEquity − η × inv² (PnL artışından envanter cezası düş)
         h = h_idx + 1        # ticks 1..5
         m = m_idx - 2        # skew  -2..+2
 

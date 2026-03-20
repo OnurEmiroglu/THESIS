@@ -1,3 +1,10 @@
+"""Synthetic regime generation and detection for WP2."""
+# Sentetik Rejim Üretimi ve Tespiti (WP2)
+# ----------------------------------------
+# 3 durumlu (L/M/H) Markov zinciri ile volatilite rejimi üretir.
+# Rolling realized volatility (RV) tabanlı dedektörler ve HMM ile rejim tespiti yapar.
+# Look-ahead yok: rejim etiketi yalnızca geçmiş veriye dayanır.
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,6 +14,8 @@ import pandas as pd
 
 REGIME_LABELS = {0: "L", 1: "M", 2: "H"}
 
+# Varsayılan geçiş matrisi: yüksek köşegen değerleri "yapışkan" rejimler üretir.
+# Satır i, sütun j: P(state_t+1 = j | state_t = i)
 DEFAULT_TRANS_MATRIX = np.array([
     [0.9967, 0.0023, 0.0010],
     [0.0042, 0.9917, 0.0041],
@@ -14,6 +23,8 @@ DEFAULT_TRANS_MATRIX = np.array([
 ])
 
 
+# Markov zinciri ile rejim dizisi üretir. Başlangıç durumu M (state=1).
+# Her adımda geçiş matrisinden olasılıksal örnekleme yapılır.
 def generate_regime_series(
     n_steps: int,
     seed: int,
@@ -37,6 +48,9 @@ def generate_regime_series(
     return regime
 
 
+# Rejim dizisine bağlı olarak sentetik mid-price serisi üretir.
+# Her rejimde farklı volatilite çarpanı (sigma_mult) kullanılır.
+# Aritmetik Brownian hareket: dMid = sigma_regime * sqrt(dt) * z * tick_size
 def generate_mid_series(
     regime_true: np.ndarray,
     cfg: dict,
@@ -66,6 +80,9 @@ def generate_mid_series(
     return mid, ret
 
 
+# Kayan pencere ile gerçekleşmiş volatilite (RV) hesaplar.
+# İlk `window` adımda NaN döner (yetersiz veri).
+# sigma_hat = RV / tick_size (tick cinsinden normalleştirilmiş volatilite)
 def compute_rolling_rv(
     mid: np.ndarray,
     window: int,
@@ -82,6 +99,8 @@ def compute_rolling_rv(
     return rv, sigma_hat
 
 
+# Warmup dönemindeki sigma_hat dağılımından eşik değerlerini belirler.
+# 33. ve 66. persantil: L/M sınırı (thresh_LM) ve M/H sınırı (thresh_MH)
 def calibrate_thresholds(
     sigma_hat: np.ndarray,
     warmup_end: int,
@@ -93,6 +112,8 @@ def calibrate_thresholds(
     return thresh_LM, thresh_MH
 
 
+# Eşik tabanlı rejim tespiti (rv_baseline dedektör).
+# Warmup dönemi "warmup" etiketi alır; sonrası sigma_hat'a göre L/M/H.
 def assign_regime_hat(
     sigma_hat: np.ndarray,
     thresh_LM: float,
@@ -113,6 +134,8 @@ def assign_regime_hat(
     return regime_hat
 
 
+# Bekleme süresi filtresi: min_dwell adımdan kısa rejim geçişlerini bastırır.
+# Kısa geçişleri bir önceki rejim etiketiyle değiştirir (gürültü azaltma).
 def apply_dwell_filter(
     regime_labels: list[str],
     min_dwell: int = 5,
@@ -160,6 +183,9 @@ def assign_regime_hat_dwell(
     return apply_dwell_filter(raw, min_dwell)
 
 
+# GaussianHMM tabanlı rejim tespiti (hmm dedektör).
+# Warmup verisinde eğitilir, sonrası nedensel (causal) tahmin yapar.
+# HMM durumları varyansa göre L/M/H'ye eşlenir (düşük varyans → L).
 def assign_regime_hat_hmm(
     sigma_hat: np.ndarray,
     warmup_end: int,
@@ -214,6 +240,8 @@ def assign_regime_hat_hmm(
     return labels
 
 
+# WP2 ana iş akışı: rejim üretimi → mid-price → RV hesaplama → eşik kalibrasyonu → tespit.
+# Sonuçları data/processed/wp2_synth.csv'ye yazar.
 def run_wp2(
     cfg: dict,
     seed: int,

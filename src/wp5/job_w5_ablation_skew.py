@@ -1,4 +1,9 @@
 """WP5 — Skew penalty ablation (PPO-aware only, OOS test with action histograms)."""
+# Skew Penalty Ablasyon Deneyi (WP5)
+# ------------------------------------
+# Skew ceza katsayısının (c) etkisini ölçer: R_t = ΔEquity - η*inv² - c*|m|
+# c=0 (kontrol grubu) ile c>0 karşılaştırılır.
+# ppo_aware'in H rejimindeki bimodal skew dağılımını düzeltir.
 
 from __future__ import annotations
 

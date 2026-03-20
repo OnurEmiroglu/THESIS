@@ -1,4 +1,9 @@
 """WP5.1 — Eta ablation sweep (PPO-aware only, OOS test)."""
+# Eta (η) Ablasyon Deneyi (WP5)
+# ------------------------------
+# Envanter ceza katsayısının (η) farklı değerleri için PPO performansını ölçer.
+# η = [0.0001, 0.0005, 0.001, 0.005, 0.01] gibi değerler test edilir.
+# Optimal η = 0.001 bu deney ile belirlendi.
 
 from __future__ import annotations
 

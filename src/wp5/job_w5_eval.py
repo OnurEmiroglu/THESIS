@@ -1,4 +1,9 @@
 """WP5 — Out-of-sample evaluation: naive, AS, PPO-aware, PPO-blind."""
+# WP5 Ana Değerlendirme
+# ----------------------
+# 4 stratejiyi 20 bağımsız seed üzerinde out-of-sample değerlendirir:
+# naive (sabit h=2), AS (Avellaneda-Stoikov), ppo_aware, ppo_blind.
+# Sonuçlar: metrics_wp5_oos.csv ve metrics_wp5_oos_by_regime.csv
 
 from __future__ import annotations
 

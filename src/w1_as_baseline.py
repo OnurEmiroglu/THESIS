@@ -1,3 +1,10 @@
+"""Avellaneda-Stoikov baseline strategy for WP1."""
+# Avellaneda-Stoikov Baz Stratejisi (WP1)
+# -----------------------------------------
+# Analitik piyasa yapıcılığı formülüne dayanan baz strateji.
+# Rezervasyon fiyatı (r) ve yarı-spread (d) hesaplayarak kotasyon üretir.
+# compute_metrics() fonksiyonu tüm stratejiler tarafından ortak kullanılır.
+
 from __future__ import annotations
 
 import json
@@ -21,6 +28,9 @@ def save_plot(path: Path, x: np.ndarray, y: np.ndarray, title: str, xlabel: str,
     plt.close()
 
 
+# Avellaneda-Stoikov kotasyon hesabı: envantere göre asimetrik bid/ask delta üretir.
+# r = mid - inv * gamma * sigma² * tau (rezervasyon fiyatı)
+# d = 0.5 * gamma * sigma² * tau + (1/gamma) * ln(1 + gamma/k) (yarı-spread)
 def as_deltas_ticks(mid: float, inv: int, t: int, cfg: dict, market: MarketParams, execp: ExecParams) -> tuple[int, int]:
     """
     Avellaneda–Stoikov (basit) quote:
@@ -59,6 +69,9 @@ def as_deltas_ticks(mid: float, inv: int, t: int, cfg: dict, market: MarketParam
     return delta_bid, delta_ask
 
 
+# Performans metriklerini hesaplar: Sharpe oranı, final equity, dolum oranı,
+# envanter istatistikleri (ortalama, p95, p99) ve maksimum drawdown.
+# Tüm stratejiler (naive, AS, PPO) bu ortak fonksiyonu kullanır.
 def compute_metrics(equity: np.ndarray, inv: np.ndarray, fills: np.ndarray, dt: float) -> dict:
     rets = np.diff(equity)
     mu = rets.mean() if rets.size else 0.0
@@ -81,6 +94,9 @@ def compute_metrics(equity: np.ndarray, inv: np.ndarray, fills: np.ndarray, dt: 
     }
 
 
+# AS stratejisini tek episode boyunca çalıştırır.
+# Her adımda as_deltas_ticks() ile kotasyon hesaplar, simülatörü ilerletir.
+# Equity eğrisi, delta geçmişi ve metrikleri dosyaya yazar.
 def run(cfg: dict, ctx=None) -> None:
     if ctx is not None and hasattr(ctx, "run_dir"):
         out_dir = Path(ctx.run_dir)
