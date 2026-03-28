@@ -1,8 +1,9 @@
-"""WP5 — Out-of-sample evaluation: naive, AS, PPO-aware, PPO-blind."""
+"""WP5 — Out-of-sample evaluation: naive, AS, PPO variants (5 ablation configs)."""
 # WP5 Ana Değerlendirme
 # ----------------------
-# 4 stratejiyi 20 bağımsız seed üzerinde out-of-sample değerlendirir:
-# naive (sabit h=2), AS (Avellaneda-Stoikov), ppo_aware, ppo_blind.
+# 7 stratejiyi (naive, AS + 5 PPO varyantı) 20 bağımsız seed üzerinde
+# out-of-sample değerlendirir. PPO varyantları: sigma_only, regime_only,
+# combined, oracle_pure, oracle_full.
 # Sonuçlar: metrics_wp5_oos.csv ve metrics_wp5_oos_by_regime.csv
 
 from __future__ import annotations
@@ -86,6 +87,14 @@ def job_entry(cfg: dict, ctx) -> None:
     n_train = math.floor(train_frac * n_full)
     n_test = n_full - n_train
 
+    VARIANTS = {
+        "sigma_only":  {"use_sigma": True,  "regime_source": "none"},
+        "regime_only": {"use_sigma": False, "regime_source": "hat"},
+        "combined":    {"use_sigma": True,  "regime_source": "hat"},
+        "oracle_pure": {"use_sigma": False, "regime_source": "true"},
+        "oracle_full": {"use_sigma": True,  "regime_source": "true"},
+    }
+
     rows_oos = []
     rows_regime = []
 
@@ -99,11 +108,12 @@ def job_entry(cfg: dict, ctx) -> None:
         exog_train = df_exog.iloc[: n_train + 1].reset_index(drop=True)
         exog_test = df_exog.iloc[n_train : n_train + n_test + 1].reset_index(drop=True)
 
-        # 3) Train PPO-aware and PPO-blind
-        for stage, use_regime in [("aware", True), ("blind", False)]:
+        # 3) Train PPO variants
+        for stage, vcfg in VARIANTS.items():
             ctx.logger.info(f"Training PPO-{stage} seed={seed}")
             cfg_tr = copy.deepcopy(cfg)
-            cfg_tr["wp3"]["use_regime"] = use_regime
+            cfg_tr["wp3"]["use_sigma"] = vcfg["use_sigma"]
+            cfg_tr["wp3"]["regime_source"] = vcfg["regime_source"]
             cfg_tr["episode"] = {**cfg_tr["episode"], "n_steps": n_train}
             cfg_tr["as"]["horizon_steps"] = n_train
 
@@ -134,23 +144,31 @@ def job_entry(cfg: dict, ctx) -> None:
             ctx.logger.info(f"Saved: models/seed{seed}/ppo_{stage}.zip")
             vec_env.close()
 
-        # 4) OOS Evaluation — 4 strategies
-        model_aware = PPO.load(str(out_dir / "models" / f"seed{seed}" / "ppo_aware"))
-        model_blind = PPO.load(str(out_dir / "models" / f"seed{seed}" / "ppo_blind"))
+        # 4) OOS Evaluation
+        models = {
+            name: PPO.load(str(out_dir / "models" / f"seed{seed}" / f"ppo_{name}"), device="cpu")
+            for name in VARIANTS
+        }
 
-        def _make_eval_cfg(use_regime):
+        def _base_eval_cfg():
             c = copy.deepcopy(cfg)
             c["episode"] = {**c["episode"], "n_steps": n_test}
-            c["wp3"]["use_regime"] = use_regime
+            c["wp3"]["use_sigma"] = True
+            c["wp3"]["regime_source"] = "hat"
             c["as"]["horizon_steps"] = n_test
             return c
 
         strategies = {
-            "naive":     (_make_eval_cfg(True),  None),
-            "AS":        (_make_eval_cfg(True),  None),
-            "ppo_aware": (_make_eval_cfg(True),  model_aware),
-            "ppo_blind": (_make_eval_cfg(False), model_blind),
+            "naive": (_base_eval_cfg(), None),
+            "AS":    (_base_eval_cfg(), None),
         }
+        for vname, vcfg in VARIANTS.items():
+            cfg_ev = copy.deepcopy(cfg)
+            cfg_ev["episode"] = {**cfg_ev["episode"], "n_steps": n_test}
+            cfg_ev["wp3"]["use_sigma"] = vcfg["use_sigma"]
+            cfg_ev["wp3"]["regime_source"] = vcfg["regime_source"]
+            cfg_ev["as"]["horizon_steps"] = n_test
+            strategies[f"ppo_{vname}"] = (cfg_ev, models[vname])
 
         for strat_name, (cfg_ev, model_ev) in strategies.items():
             env_ev = MMEnv(cfg_ev)
@@ -212,6 +230,12 @@ def job_entry(cfg: dict, ctx) -> None:
             })
 
             # Save curve
+            # regime_true her zaman mevcut (sentetik veri)
+            rt_arr = list(exog_test["regime_true"].values[:n_test + 1]) if "regime_true" in exog_test.columns else [""] * (n_test + 1)
+            # obs_regime_source: bu strateji hangi kaynağı kullandı
+            ev_cfg_this = strategies[strat_name][0]
+            obs_regime_source = ev_cfg_this["wp3"].get("regime_source", "hat") if ev_cfg_this is not None else "hat"
+
             pd.DataFrame({
                 "t": np.arange(n_test + 1),
                 "equity": eq,
@@ -219,6 +243,8 @@ def job_entry(cfg: dict, ctx) -> None:
                 "h": h_arr,
                 "m": m_arr,
                 "regime_hat": rh_arr,
+                "regime_true": rt_arr,
+                "obs_regime_source": obs_regime_source,
             }).to_csv(
                 out_dir / "curves" / f"seed{seed}_{strat_name}_test.csv", index=False,
             )
@@ -260,7 +286,7 @@ def job_entry(cfg: dict, ctx) -> None:
         ax.bar(x + i * width, vals, width, label=s)
     ax.set_xticks(x + width * 1.5)
     ax.set_xticklabels([f"seed={s}" for s in seed_vals])
-    ax.set_title("WP5 OOS Final Equity by Seed")
+    ax.set_title("WP5 Ablation OOS Final Equity by Seed")
     ax.set_ylabel("Final Equity")
     ax.legend()
     fig.tight_layout()
@@ -271,7 +297,7 @@ def job_entry(cfg: dict, ctx) -> None:
     agg = df_oos.groupby("strategy")["final_equity"].agg(["mean", "std"]).reset_index()
     fig, ax = plt.subplots(figsize=(7, 4))
     ax.bar(agg["strategy"], agg["mean"], yerr=agg["std"].fillna(0), capsize=5)
-    ax.set_title("WP5 OOS Final Equity: Mean +/- Std Across Seeds")
+    ax.set_title("WP5 Ablation: Mean +/- Std Across Seeds")
     ax.set_ylabel("Final Equity")
     fig.tight_layout()
     fig.savefig(out_dir / "plots" / "wp5_final_equity_mean_std.png", dpi=150)
