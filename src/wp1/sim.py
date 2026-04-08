@@ -28,7 +28,7 @@ class MarketParams:
 # Emir çalıştırma parametrelerini tutan değişmez veri sınıfı.
 # A: delta=0 anındaki dolum yoğunluğu, k: yoğunluğun uzaklıkla azalma hızı,
 # fee_bps: komisyon (baz puan), latency_steps: gecikme adım sayısı
-@dataclass(frozen=True)
+@dataclass
 class ExecParams:
     A: float               # delta=0 iken intensity (fills/sec)
     k: float               # decay (per tick)

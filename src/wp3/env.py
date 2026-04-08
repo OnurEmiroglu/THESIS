@@ -31,10 +31,34 @@ class MMEnv(gymnasium.Env):
 
         wp3 = cfg.get("wp3", {})
         self.eta = float(wp3.get("eta", 0.01))
+        # Regime-conditional eta: {"L": ..., "M": ..., "H": ...}
+        # Eğer config'de yoksa None — fallback olarak self.eta kullanılır
+        eta_regime_cfg = wp3.get("eta_regime", None)
+        if eta_regime_cfg is not None:
+            self.eta_regime = {
+                "L": float(eta_regime_cfg["L"]),
+                "M": float(eta_regime_cfg["M"]),
+                "H": float(eta_regime_cfg["H"]),
+            }
+        else:
+            self.eta_regime = None
         self.skew_penalty_c = float(wp3.get("skew_penalty_c", 0.0))
-        self.use_regime = bool(wp3.get("use_regime", True))
+        self.use_sigma = bool(wp3.get("use_sigma", True))
+        regime_source = str(wp3.get("regime_source", "hat"))
+        # backward compat: eski use_regime flag'ini dönüştür
+        if "regime_source" not in wp3 and "use_regime" in wp3:
+            regime_source = "hat" if wp3["use_regime"] else "none"
+        if regime_source not in ("none", "hat", "true"):
+            raise ValueError(f"regime_source must be 'none', 'hat' or 'true', got: {regime_source!r}")
+        self.regime_source = regime_source
         self.seed_val = int(cfg["seed"])
         self.cfg = cfg
+
+        # Model misspecification: regime-dependent fill parameters
+        misspec = cfg.get("misspec", {})
+        self.misspec_enabled = bool(misspec.get("enabled", False))
+        self.misspec_params = misspec.get("params", {})
+        # e.g. {"L": {"A": 4.0, "k": 1.8}, "M": {"A": 5.0, "k": 1.5}, "H": {"A": 6.0, "k": 1.2}}
 
         # obs: [q_norm, sigma_hat, tau, regime_L, regime_M, regime_H]
         self.observation_space = spaces.Box(
@@ -51,34 +75,35 @@ class MMEnv(gymnasium.Env):
     # ------------------------------------------------------------------
     def _get_obs(self) -> np.ndarray:
         """Build 6-dim observation vector."""
-        # Normalleştirilmiş envanter: [-1, +1] aralığına kırpılmış
-        # sigma_hat: kayan gerçekleşmiş volatilite tahmini
-        # tau: kalan zaman fraksiyonu (1.0'dan 0.0'a doğru azalır)
-        # r_L, r_M, r_H: aktif rejimin one-hot kodlaması (ppo_blind için hepsi 0)
         q = np.clip(self._state.inv, -self.inv_max_clip, self.inv_max_clip)
         q_norm = q / self.inv_max_clip
 
-        if self._exog is not None:
+        tau = (self.n_steps - self._t) / self.n_steps
+
+        # sigma_hat
+        if self._exog is not None and self.use_sigma:
             idx = min(self._t, len(self._exog) - 1)
             sh = float(self._exog["sigma_hat"].iloc[idx])
             if np.isnan(sh):
                 sh = 0.0
-            regime = str(self._exog["regime_hat"].iloc[idx])
         else:
             sh = 0.0
-            regime = "M"
 
-        if regime not in ("L", "M", "H"):
-            regime = "M"
-
-        tau = (self.n_steps - self._t) / self.n_steps
-
-        if self.use_regime:
-            r_l = 1.0 if regime == "L" else 0.0
-            r_m = 1.0 if regime == "M" else 0.0
-            r_h = 1.0 if regime == "H" else 0.0
-        else:
-            r_l = r_m = r_h = 0.0
+        # regime one-hot
+        r_l = r_m = r_h = 0.0
+        if self.regime_source != "none" and self._exog is not None:
+            idx = min(self._t, len(self._exog) - 1)
+            if self.regime_source == "true":
+                label = str(self._exog["regime_true"].iloc[idx])
+            else:
+                label = str(self._exog["regime_hat"].iloc[idx])
+            # warmup veya geçersiz label → zero one-hot (M'ye map etme)
+            if label == "L":
+                r_l = 1.0
+            elif label == "M":
+                r_m = 1.0
+            elif label == "H":
+                r_h = 1.0
 
         return np.array([q_norm, sh, tau, r_l, r_m, r_h], dtype=np.float32)
 
@@ -131,6 +156,20 @@ class MMEnv(gymnasium.Env):
 
         equity_before = self._state.equity
 
+        # Apply misspec: override simulator exec params based on regime_true
+        if self.misspec_enabled and self._exog is not None and "regime_true" in self._exog.columns:
+            idx = min(self._t, len(self._exog) - 1)
+            regime_true = str(self._exog["regime_true"].iloc[idx])
+            if regime_true in self.misspec_params:
+                p = self.misspec_params[regime_true]
+                from src.wp1.sim import ExecParams
+                self._sim.e = ExecParams(
+                    A=float(p.get("A", self.execp.A)),
+                    k=float(p.get("k", self.execp.k)),
+                    fee_bps=self.execp.fee_bps,
+                    latency_steps=self.execp.latency_steps,
+                )
+
         # when exogenous mid is available, override simulator's BM
         if self._exog is not None and (self._t + 1) < len(self._exog):
             exog_mid = float(self._exog["mid"].iloc[self._t + 1])
@@ -152,8 +191,17 @@ class MMEnv(gymnasium.Env):
         equity_after = self._state.equity
         inv_after = self._state.inv
 
+        # Regime-conditional eta seçimi
+        if self.eta_regime is not None and self._exog is not None:
+            idx = min(self._t - 1, len(self._exog) - 1)
+            regime_now = str(self._exog["regime_hat"].iloc[idx])
+            if regime_now not in ("L", "M", "H"):
+                regime_now = "M"
+            eta_now = self.eta_regime[regime_now]
+        else:
+            eta_now = self.eta
         # reward: PnL increment minus inventory penalty
-        reward = (equity_after - equity_before) - self.eta * (inv_after ** 2) - self.skew_penalty_c * abs(m)
+        reward = (equity_after - equity_before) - eta_now * (inv_after ** 2) - self.skew_penalty_c * abs(m)
 
         terminated = self._t >= self.n_steps
         truncated = False
