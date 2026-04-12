@@ -15,7 +15,7 @@ High-frequency market-making (HFMM) thesis. A PPO-based reinforcement learning a
 | WP2 | Synthetic regime generation (L/M/H), rolling RV detection, 3 detectors | Done |
 | WP3 | Gym environment + sanity check (ablation ready) | Done |
 | WP4 | RL training (PPO aware + blind) | Done |
-| WP5 | OOS evaluation, ablations (eta, skew, detector), thesis writing | Done |
+| WP5 | OOS evaluation, ablations (eta, skew, detector, 5-variant, oracle, eta-regime), thesis writing | Done |
 
 ## Commands
 
@@ -38,6 +38,8 @@ python run.py --config config/w5_ablation_eta.json      # WP5 eta ablation (3 et
 python run.py --config config/w5_ablation_skew.json     # WP5 skew penalty ablation (20 seeds)
 python run.py --config config/w5_detector_pilot.json    # WP5 detector comparison (3 seeds)
 python run.py --config config/w5_detector_full.json     # WP5 detector comparison (20 seeds)
+python run.py --config config/w5_eta_regime.json      # WP5 regime-conditional eta (20 seeds, 1M ts)
+python run.py --config config/w5_misspec_mild.json  # WP5 model misspecification mild (20 seeds, 1M ts)
 
 # Standalone scripts
 python -m src.wp2.compare_detectors   # Compare 3 detectors on same synthetic data (no run.py)
@@ -164,7 +166,8 @@ All configs share `seed`, `market` (`mid0`, `tick_size`, `dt`, `sigma_mid_ticks`
 - **Three detectors** for robustness analysis: `rv_baseline`, `rv_dwell` (dwell filter), `hmm` (GaussianHMM)
 - **Train/test split:** 70/30 on exogenous series (no data leakage between train and OOS)
 - **PPO hyperparams:** lr=3e-4, n_steps=2048, batch=256, epochs=10, gamma=0.999, clip=0.2
+- **Model misspecification:** `A` and `k` are regime-dependent in misspec experiments; `ExecParams` unfrozen; override applied per-step in `env.py` based on `regime_true`
 
 ## Thesis manuscript
 
-Source: `manuscript/thesis.md`. Build to DOCX via VS Code task "Build thesis (DOCX)" (requires pandoc).
+Source: scripts/gen_thesis_docx.py (python-docx). Current version: thesis_18.docx / thesis_18.pdf in manuscript/. Decisions log: decisions_log_5.docx in manuscript/.
