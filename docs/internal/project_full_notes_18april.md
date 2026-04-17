@@ -6,7 +6,7 @@
 
 **Araştırma sorusu:** Rejim-farkında (aware) PPO agent, rejim-kör (blind) PPO agent'tan anlamlı şekilde daha iyi performans gösterir mi?
 
-**Mevcut bulgu:** Null result — Sharpe metriğinde rejim etiketinin anlamlı üstünlüğü yok. Ana OOS: Sharpe paired t-test p=0.261 (inconclusive), equity p=0.023 (ppo_blind lehine, 20 seed, rv_baseline). Detector robustness full run tamamlandı (3 detector × 20 seed × 2 strateji = 120 model): rv_baseline p=0.114, rv_dwell p=0.110, HMM p=0.082, ANOVA F=0.003 p=0.997. 5-varyant ablasyon tamamlandı: ppo_sigma_only en yüksek Sharpe (0.753); oracle_full (0.722) sigma_only'yi geçemedi (sigma_only vs oracle_full Sharpe p=0.115). Original 4-strategy OOS run'da PPO-aware/blind Sharpe 0.715/0.740, AS 0.105 ve naive 0.127; equity bazında AS, PPO'lardan daha yüksek mutlak equity üretiyor. Rejime koşullu η deneyi (ηH=5×ηL, 20 seed): combined vs sigma_only Sharpe p=0.0016 — sigma_only lehine anlamlı fark, signal redundancy ödül tasarımı boyutunda da desteklendi. TOST equivalence test (17 Nisan 2026): Ana ablasyonda ±0.10 sınırında eşdeğerlik kanıtlandı (p=0.0005, 95% CI [−0.007, +0.068]). Misspec ortamında ±0.05 sınırında eşdeğerlik kanıtlandı (p=0.039, Cohen's d=0.035). Null result pasif bulgutan aktif kanıta dönüştürüldü.
+**Mevcut bulgu:** Null result — Sharpe metriğinde rejim etiketinin anlamlı üstünlüğü yok. Ana OOS: Sharpe paired t-test p=0.261 (inconclusive), equity p=0.023 (ppo_blind lehine, 20 seed, rv_baseline). Detector robustness full run tamamlandı (3 detector × 20 seed × 2 strateji = 120 model): rv_baseline p=0.114, rv_dwell p=0.110, HMM p=0.082, ANOVA F=0.003 p=0.997. 5-varyant ablasyon tamamlandı: ppo_sigma_only en yüksek Sharpe (0.753); oracle_full (0.722) sigma_only'yi geçemedi (sigma_only vs oracle_full Sharpe p=0.115). Original 4-strategy OOS run'da PPO-aware/blind Sharpe 0.715/0.740, AS 0.105 ve naive 0.127; equity bazında AS, PPO'lardan daha yüksek mutlak equity üretiyor. Rejime koşullu η deneyi (ηH=5×ηL, 20 seed): combined vs sigma_only Sharpe p=0.0016 — sigma_only lehine anlamlı fark, signal redundancy ödül tasarımı boyutunda da desteklendi. TOST equivalence test (17 Nisan 2026, thesis_25 recompute): Ana ablasyonda ±0.10 sınırında eşdeğerlik kanıtlandı (p=0.00067, 90% CI [−0.001, +0.063], 95% CI [−0.008, +0.069]). Misspec ortamında ±0.05 sınırında eşdeğerlik kanıtlandı (p=0.042, 90% CI [−0.040, +0.048], 95% CI [−0.049, +0.057], Cohen's d=0.034). 90% CI, TOST α=0.05 prosedürüne karşılık gelen aralıktır. Null result pasif bulgutan aktif kanıta dönüştürüldü.
 
 **Üniversite:** KIT (Karlsruhe Institute of Technology), Financial Engineering MSc Thesis.
 
@@ -421,11 +421,12 @@ Full experiment tamamlandı. Null result 3 bağımsız detector'da tutarlı şek
 - Tum danishman deneyleri tamamlandi (4/4)
 - Sonraki adim: Hocaya gorusme maili + toplanti sunumu
 
-## [Güncel Durum — 17 Nisan 2026]
+## [Güncel Durum — 18 Nisan 2026]
 
 - Tüm 4 danışman deneyi tamamlandı (thesis_23)
 - TOST equivalence analysis tamamlandı (17 Nisan)
+- Codex 2. denetim (thesis_25): TOST p/CI değerleri birincil CSV recompute'a göre güncellendi; 90% CI (TOST α=0.05 konvansiyonu) eklendi. Karar #41 (decisions_log_8).
 - Run klasörleri temizlendi: 8 duplicate/smoke run silindi, 24 run korundu
 - Opus 4.7 Claude Code'a geçildi (v2.1.112)
-- Current manuscript: thesis_24.docx, decisions_log_7.docx
+- Current manuscript: thesis_25.docx / thesis_25.pdf, decisions_log_8.docx / decisions_log_8.pdf
 - Bir sonraki adım: Signal informativeness sweep deney tasarımı

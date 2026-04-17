@@ -135,6 +135,7 @@ bunu "fark pratik olarak ihmal edilebilir" olarak aktif kanıtlamaya dönüştü
 - Fark: +0.031, Cohen's d: 0.379
 - Klasik t-test: p=0.115
 - TOST ±0.10: p=0.00067 → EŞDEĞERLİK KANITLANDI
+- 90% CI: [−0.001, +0.063] (TOST α=0.05'e karşılık gelen aralık, ±0.10 içinde)
 - 95% CI: [−0.008, +0.069]
 
 ### Misspecification Ortamı (metrics_wp5_oos.csv, misspec-mild run)
@@ -143,10 +144,11 @@ bunu "fark pratik olarak ihmal edilebilir" olarak aktif kanıtlamaya dönüştü
 - Klasik t-test: p=0.881
 - TOST ±0.05: p=0.042 → EŞDEĞERLİK KANITLANDI
 - TOST ±0.10: p=0.00067 → EŞDEĞERLİK KANITLANDI
+- 90% CI: [−0.040, +0.048] (TOST α=0.05'e karşılık gelen aralık, ±0.05'in *içinde*)
 - 95% CI: [−0.049, +0.057]
 
 Yorum: İki ortamda da TOST eşdeğerliği kanıtlandı. "p > 0.05 = fark yok" zayıf
 argümanının ötesine geçilerek "fark pratik olarak ihmal edilebilir aralıkta"
 ifadesi kullanılabilir hale geldi. Paper için güçlü istatistiksel zemin.
 
-Current manuscript: thesis_24.docx / thesis_24.pdf, decisions_log_7.docx.
+Current manuscript: thesis_25.docx / thesis_25.pdf, decisions_log_8.docx / decisions_log_8.pdf.

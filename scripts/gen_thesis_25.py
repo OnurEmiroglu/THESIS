@@ -957,7 +957,7 @@ app_r = [
     ["src/wp5/job_w5_detector_compare.py", "Detector robustness deneyi (120 model)"],
     ["src/wp5/analyze_actions.py", "Eylem dağılımı analizi"],
     ["src/wp5/figure_thesis.py", "Tez figürlerinin üretimi"],
-    ["src/wp5/figure_thesis_23.py", "thesis_23 ek figürlerinin üretimi"],
+    ["src/wp5/figure_thesis_23.py", "Model misspecification ve eta-regime ek figürlerinin üretimi (legacy dosya adı korunmuştur)"],
     ["src/wp5/stats_detector_robustness.py", "İstatistiksel testler (paired t-test ve ANOVA)"],
     ["scripts/gen_thesis_docx.py", "Tez DOCX üretim scripti"],
     ["scripts/gen_thesis_draft.js", "Tez taslak üretim scripti (Node.js)"],
