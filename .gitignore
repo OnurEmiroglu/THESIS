@@ -51,3 +51,7 @@ node_modules/
 
 results/runs/*
 !results/runs/.gitkeep
+
+# ---- Word/Office temp files ----
+~$*
+~WRL*.tmp

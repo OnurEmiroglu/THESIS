@@ -124,3 +124,29 @@ t-test sonuçları:
 Yorum: Signal redundancy argumani misspec ortamda da destekleniyor. Strong variant calistirilmadi; bu tez sürümünde future work olarak bırakıldı.
 
 Tum danishman deneyleri tamamlandi. Current manuscript: thesis_22 + decisions_log_6.
+
+## 10. TOST Equivalence Analysis (17 Nisan 2026)
+
+Klasik t-test null result'ı "fark bulunamadı" olarak sunar. TOST (Two One-Sided Tests)
+bunu "fark pratik olarak ihmal edilebilir" olarak aktif kanıtlamaya dönüştürür.
+
+### Ana Ablasyon (normal ortam, metrics_wp5_oos_combined.csv)
+- sigma_only mean Sharpe: 0.753, oracle_full: 0.722
+- Fark: +0.031, Cohen's d: 0.379
+- Klasik t-test: p=0.115
+- TOST ±0.10: p=0.00067 → EŞDEĞERLİK KANITLANDI
+- 95% CI: [−0.008, +0.069]
+
+### Misspecification Ortamı (metrics_wp5_oos.csv, misspec-mild run)
+- sigma_only mean Sharpe: 0.685, oracle_full: 0.682
+- Fark: +0.004, Cohen's d: 0.034
+- Klasik t-test: p=0.881
+- TOST ±0.05: p=0.042 → EŞDEĞERLİK KANITLANDI
+- TOST ±0.10: p=0.00067 → EŞDEĞERLİK KANITLANDI
+- 95% CI: [−0.049, +0.057]
+
+Yorum: İki ortamda da TOST eşdeğerliği kanıtlandı. "p > 0.05 = fark yok" zayıf
+argümanının ötesine geçilerek "fark pratik olarak ihmal edilebilir aralıkta"
+ifadesi kullanılabilir hale geldi. Paper için güçlü istatistiksel zemin.
+
+Current manuscript: thesis_24.docx / thesis_24.pdf, decisions_log_7.docx.

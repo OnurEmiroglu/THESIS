@@ -60,7 +60,8 @@
       "Bash(powershell -Command \"Get-Process -Id 44404 | Select-Object CPU\")",
       "Bash(docx2pdf:*)",
       "Bash(claude update *)",
-      "Bash(npm update *)"
+      "Bash(npm update *)",
+      "Bash(git rm *)"
     ]
   }
 }

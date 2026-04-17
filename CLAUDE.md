@@ -170,4 +170,4 @@ All configs share `seed`, `market` (`mid0`, `tick_size`, `dt`, `sigma_mid_ticks`
 
 ## Thesis manuscript
 
-Source: scripts/gen_thesis_docx.py (python-docx). Current version: thesis_18.docx / thesis_18.pdf in manuscript/. Decisions log: decisions_log_5.docx in manuscript/.
+Source: scripts/gen_thesis_docx.py (python-docx). Current version: thesis_24.docx / thesis_24.pdf in manuscript/. Decisions log: decisions_log_7.docx in manuscript/.
