@@ -1,14 +1,12 @@
 # Proje Tam Notlar
 
-> STALE/HISTORICAL SNAPSHOT (30 March 2026): This file is kept for chronology and may contain pre-thesis_22 p-values, old module references, and older status text. Do not use it as the current source of truth; prefer README.md, thesis_22, and results CSVs.
-
 ## 1. Proje Genel Bakış
 
 **Konu:** Yüksek frekanslı piyasa yapıcılık (HFMM) — PPO tabanlı RL agent'ın farklı volatilite rejimlerinde (L/M/H) bid/ask kotasyonu öğrenmesi.
 
 **Araştırma sorusu:** Rejim-farkında (aware) PPO agent, rejim-kör (blind) PPO agent'tan anlamlı şekilde daha iyi performans gösterir mi?
 
-**Mevcut bulgu:** Null result — istatistiksel olarak anlamlı fark yok. Ana OOS: Sharpe p=0.261 (inconclusive), equity p=0.023 (ppo_blind lehine, 20 seed, rv_baseline). Detector robustness full run tamamlandı (3 detector × 20 seed × 2 strateji = 120 model): rv_baseline p=0.114, rv_dwell p=0.110, HMM p=0.082, ANOVA F=0.003 p=0.997. 5-varyant ablasyon tamamlandı: ppo_sigma_only en yüksek Sharpe (0.753); oracle_full (0.722) sigma_only'yi geçemedi (oracle paradoksu, p=0.301). PPO varyantları Sharpe bazında naive'i geçiyor (~0.85 vs ~0.75) ve AS ile yakın performans gösteriyor (~0.85); ancak equity bazında AS, PPO'lardan daha yüksek mutlak equity üretiyor. Rejime koşullu η deneyi (ηH=5×ηL, 20 seed): combined vs sigma_only Sharpe p=0.0016 — sigma_only lehine anlamlı fark, signal redundancy ödül tasarımı boyutunda da teyit edildi.
+**Mevcut bulgu:** Null result — Sharpe metriğinde rejim etiketinin anlamlı üstünlüğü yok. Ana OOS: Sharpe paired t-test p=0.261 (inconclusive), equity p=0.023 (ppo_blind lehine, 20 seed, rv_baseline). Detector robustness full run tamamlandı (3 detector × 20 seed × 2 strateji = 120 model): rv_baseline p=0.114, rv_dwell p=0.110, HMM p=0.082, ANOVA F=0.003 p=0.997. 5-varyant ablasyon tamamlandı: ppo_sigma_only en yüksek Sharpe (0.753); oracle_full (0.722) sigma_only'yi geçemedi (sigma_only vs oracle_full Sharpe p=0.115). Original 4-strategy OOS run'da PPO-aware/blind Sharpe 0.715/0.740, AS 0.105 ve naive 0.127; equity bazında AS, PPO'lardan daha yüksek mutlak equity üretiyor. Rejime koşullu η deneyi (ηH=5×ηL, 20 seed): combined vs sigma_only Sharpe p=0.0016 — sigma_only lehine anlamlı fark, signal redundancy ödül tasarımı boyutunda da desteklendi.
 
 **Üniversite:** KIT (Karlsruhe Institute of Technology), Financial Engineering MSc Thesis.
 
@@ -55,7 +53,7 @@
 
 ### Veri yapıları
 - `MarketParams` (frozen): `mid0`, `tick_size`, `dt`, `sigma_mid_ticks`
-- `ExecParams` (frozen): `A`, `k`, `fee_bps`, `latency_steps`
+- `ExecParams` (mutable dataclass): `A`, `k`, `fee_bps`, `latency_steps`
 - `MMState` (mutable): `t`, `mid`, `cash`, `inv`; `equity = cash + inv * mid`
 
 ### Fee yapısı
@@ -223,7 +221,7 @@ R_t = (equity_after - equity_before) - eta * inv_after^2 - skew_penalty_c * |m|
 
 **Ana sonuçlar (20 seed):**
 - Naive ve AS: düşük Sharpe
-- PPO-aware (~0.85) ve PPO-blind (~0.81): naive'i geçiyor, AS ile yakın
+- PPO-aware (0.715) ve PPO-blind (0.740): naive (0.127) ve AS'i (0.105) Sharpe bazında geçiyor
 - Aware vs blind farkı: p=0.261 (Sharpe), p=0.023 (equity, blind lehine)
 
 ### 10b. Eta Ablasyonu (`src/wp5/job_w5_ablation_eta.py`)
@@ -257,7 +255,7 @@ Full run sonuçları (20 seed):
 - Çıktılar: `action_h_by_regime.png`, `action_m_by_regime.png`, `ph5_by_regime.png`
 - P(h=5) = undertrading göstergesi (agent spreadi çok açıyor mu?)
 
-### 10f. 5-Varyant Ablasyon (`src/wp5/job_w5_ablation.py`)
+### 10f. 5-Varyant Ablasyon (`src/wp5/job_w5_eval.py`)
 - 5 varyant: sigma_only (sadece sigma_hat), regime_only (sadece one-hot), combined (her ikisi), oracle_pure (gerçek rejim, sigma_hat yok), oracle_full (gerçek rejim + sigma_hat)
 - 20 seed, 1M timesteps
 - Sonuçlar:
@@ -268,8 +266,8 @@ Full run sonuçları (20 seed):
   | ppo_oracle_full | 0.722 |
   | ppo_oracle_pure | ~0.68 |
   | ppo_regime_only | en düşük |
-- Oracle paradoksu: Mükemmel rejim bilgisi bile sigma_only'yi geçemedi (p=0.301)
-- Temel çıkarım: sigma_hat sinyal redundancy'nin doğrudan kanıtı
+- Oracle paradoksu: Mükemmel rejim bilgisi bile sigma_only'yi Sharpe bazında geçemedi (sigma_only vs oracle_full p=0.115; p=0.301 oracle_full vs combined karşılaştırmasına aittir)
+- Temel çıkarım: sigma_hat signal redundancy argümanını güçlü biçimde destekliyor
 
 ### 10g. Rejime Koşullu Envanter Cezası (`config/w5_eta_regime.json`)
 - Danışmanın önerisi: η rejime bağlı kılınsın (ηH = 5×ηL)
@@ -286,8 +284,8 @@ Full run sonuçları (20 seed):
   | ppo_regime_only | 0.513 | 0.238 |
 - Paired t-test (combined vs sigma_only): Sharpe p=0.0016, Equity p=0.008
 - Yorum: Rejime koşullu η performansı artırmak yerine düşürdü.
-  Signal redundancy argümanı ödül tasarımı boyutunda da teyit edildi.
-- thesis_17'ye Section 4.7 olarak eklendi.
+  Signal redundancy argümanı ödül tasarımı boyutunda da desteklendi.
+- thesis_22'de Section 4.7 olarak yer alıyor.
 
 ## 11. Mevcut Bulgular ve Tartışma
 
@@ -300,7 +298,7 @@ Full run sonuçları (20 seed):
 Her iki PPO varyantı da `sigma_hat`'ı observation'da alıyor (index 1). Rejim one-hot'ı (index 3-5) sadece sigma_hat'ın kaba bir ayrıklaştırılmış hali. Agent zaten sigma_hat'tan volatilite bilgisini öğreniyor — discrete rejim etiketi ek sinyal taşımıyor.
 
 ### Sharpe vs Equity ayrımı
-- Sharpe bazında PPO varyantları naive'i geçiyor (~0.85 vs ~0.75), AS ile yakın (~0.85)
+- Sharpe bazında PPO-aware/blind, naive ve AS'i geçiyor (0.715/0.740 vs 0.127/0.105)
 - Ancak equity bazında AS daha yüksek mutlak equity üretiyor — PPO'lar risk-adjusted performansta üstün ama toplam PnL'de AS'nin gerisinde kalabiliyor
 - Bu fark, PPO'nun inventory penalty (eta) nedeniyle daha konservatif pozisyon almasından kaynaklanıyor
 
@@ -309,8 +307,8 @@ Her iki PPO varyantı da `sigma_hat`'ı observation'da alıyor (index 1). Rejim 
 - "Daha çok eğitim lazım" → 1M timesteps, 20 seed, tutarlı sonuç
 - "Eta yanlış" → Ablasyon yapıldı, 3 farklı eta değeri denendi
 - "sigma_hat'ın varlığı confounding yaratıyor" → 5-varyant ablasyon ile test edildi; sigma_hat çıkarıldığında (regime_only, oracle_pure) performans düşüyor — sigma_hat'ın kritik sinyal olduğu doğrulandı
-- "Oracle ile dene" → oracle_full bile sigma_only'yi geçemedi (p=0.301) — signal redundancy kesin olarak teyit edildi
-- "Ödül fonksiyonu rejime özgü davranışı teşvik etmiyor" → Rejime koşullu η denendi (ηH=5×ηL, 20 seed); sigma_only istatistiksel olarak anlamlı biçimde güçlü kaldı (p=0.0016). Signal redundancy ödül kanalında da teyit edildi.
+- "Oracle ile dene" → oracle_full bile sigma_only'yi Sharpe bazında geçemedi (p=0.115) — signal redundancy argümanı güçlü biçimde desteklendi
+- "Ödül fonksiyonu rejime özgü davranışı teşvik etmiyor" → Rejime koşullu η denendi (ηH=5×ηL, 20 seed); sigma_only istatistiksel olarak anlamlı biçimde güçlü kaldı (p=0.0016). Signal redundancy argümanı ödül kanalında da desteklendi.
 
 ## 12. Dosya Referans Tablosu
 
@@ -331,7 +329,7 @@ Her iki PPO varyantı da `sigma_hat`'ı observation'da alıyor (index 1). Rejim 
 | `src/wp3/env.py` | MMEnv — Gymnasium ortamı |
 | `src/w3_sanity.py` | WP3 sanity check (naive, AS, random; rejim ablasyonu) |
 | `src/wp4/job_w4_ppo.py` | PPO eğitimi (aware + blind) |
-| `src/wp5/job_w5_eval.py` | OOS değerlendirme (4 strateji x N seed) |
+| `src/wp5/job_w5_eval.py` | OOS değerlendirme ve 5-varyant ablation (naive/AS + PPO varyantları x N seed) |
 | `src/wp5/job_w5_ablation_eta.py` | Eta ablasyon sweep |
 | `src/wp5/job_w5_ablation_skew.py` | Skew penalty ablasyonu |
 | `src/wp5/job_w5_detector_compare.py` | Detector robustness deneyi |
@@ -417,8 +415,8 @@ Config: w5_detector_full.json
 Full experiment tamamlandı. Null result 3 bağımsız detector'da tutarlı şekilde doğrulandı.
 
 ### Mevcut Durum (12 Nisan 2026)
-- thesis_18.pdf: Final tez taslagi (Section 4.8 + Bulgu 6 dahil, 6 bulgu)
-- decisions_log_5.pdf: Guncel karar logu (35 karar)
+- thesis_22.pdf: Guncel tez taslagi (Section 4.8 + Bulgu 6 dahil, 6 bulgu)
+- decisions_log_6.pdf: Guncel karar logu
 - Danishman toplantisi: hazirlaniliyor
 - Tum danishman deneyleri tamamlandi (4/4)
 - Sonraki adim: Hocaya gorusme maili + toplanti sunumu

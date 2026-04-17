@@ -11,10 +11,10 @@
 
 | Strategy | Mean Sharpe | Std Sharpe | Mean Equity | Std Equity |
 |---|---|---|---|---|
-| ppo_aware | 0.715 | high | ~4.5 | high |
-| ppo_blind | 0.740 | medium | ~4.8 | medium |
-| AS | 0.752 | low | ~5.5 | low |
-| naive | 0.105 | low | ~3.5 | low |
+| ppo_aware | 0.715 | 0.133 | 4.10 | 0.78 |
+| ppo_blind | 0.740 | 0.120 | 4.42 | 0.71 |
+| AS | 0.105 | 0.082 | 5.05 | 4.72 |
+| naive | 0.127 | 0.092 | 4.49 | 3.49 |
 
 Statistical tests (ppo_aware vs ppo_blind):
 - Sharpe-based paired t-test: p=0.261 (inconclusive)
@@ -33,7 +33,7 @@ Result: eta=0.001 optimal
 
 ppo_aware ve ppo_blind sınırlı davranışsal farklılık gösterdi.
 Her iki ajanda h yaklaşık 1.4-1.8 bandında kaldı.
-Thesis_16 final değerleri kanonik referanstır.
+thesis_22 değerleri kanonik referanstır.
 
 ## 5. Null Result Interpretation
 
@@ -49,7 +49,7 @@ implicitly available in the observation space."
 
 ## 6. Detector Robustness (WP5.3)
 
-Bkz. docs/wp2/wp2_notes.md Section 7 ve project_full_notes.md Section 13.
+Bkz. docs/wp2/wp2_notes.md Section 7 ve docs/internal/project_full_notes_12april.md Section 13.
 
 Pilot (3 seeds):
 - rv_baseline: aware=0.850, blind=0.814
@@ -70,14 +70,15 @@ Tasarım: Danışmanın "sigma_hat confounding yaratıyor" eleştirisine yanıt.
 | Varyant | Obs İçeriği | Mean Sharpe |
 |---|---|---|
 | ppo_sigma_only | sadece sigma_hat | 0.753 |
-| ppo_combined | sigma_hat + regime one-hot | ~0.74 |
+| ppo_combined | sigma_hat + regime one-hot | 0.696 |
 | ppo_oracle_full | sigma_hat + gerçek rejim one-hot | 0.722 |
 | ppo_oracle_pure | sadece gerçek rejim one-hot | ~0.68 |
 | ppo_regime_only | sadece tahmini rejim one-hot | en düşük |
 
 Oracle paradoksu:
 - oracle_full mükemmel rejim bilgisine sahip ama sigma_only'yi geçemedi
-- Paired t-test: p=0.301 (Sharpe), p=0.360 (equity) — anlamlı fark yok
+- Paired t-test (sigma_only vs oracle_full): p=0.115 (Sharpe) — anlamlı fark yok
+- Not: p=0.301, oracle_full vs combined Sharpe karşılaştırmasına aittir.
 - Yorum: sigma_hat tek başına yeterli; rejim etiketi ne kadar mükemmel olursa olsun ek sinyal taşımıyor
 
 ## 7. Durum (8 Nisan 2026)
@@ -90,16 +91,16 @@ WP5 tüm deneyleriyle tamamlandı:
 - 5-varyant ablasyon + oracle paradoksu: ✓
 - Regime-conditional eta full run (20 seed): ✓ — tamamlandı (p=0.0016, sigma_only kazandı)
 
-Tez yazımı devam ediyor (thesis_17.pdf). Danışman toplantısı yaklaşıyor. decisions_log_4.pdf (32 karar).
+Tez yazımı thesis_22.pdf ve decisions_log_6.pdf sürümlerine ilerledi. Bu bölüm 8 Nisan ara durumunu tarihsel bağlam olarak korur.
 
 ## 8. Danışman Deneyleri Tamamlanma Durumu (12 Nisan 2026)
 
 | # | Deney | Durum |
 |---|-------|-------|
-| 1 | Pure Ablation (5 varyant, 20 seed) | Tamamlandı — thesis_18 Section 4.2-4.3 |
-| 2 | Regime-Conditional Reward Shaping (etaH=5xetaL) | Tamamlandı — thesis_18 Section 4.7 |
-| 3 | Oracle + High-Accuracy Detector (hedef >=90%) | Tamamlandı — Oracle = %100 doğruluk; p=0.301 (thesis_18 Section 4.3) |
-| 4 | Model Misspecification Robustness (A,k rejime bağlı) | Tamamlandı — thesis_18 Section 4.8 |
+| 1 | Pure Ablation (5 varyant, 20 seed) | Tamamlandı — thesis_22 Section 4.2-4.3 |
+| 2 | Regime-Conditional Reward Shaping (etaH=5xetaL) | Tamamlandı — thesis_22 Section 4.7 |
+| 3 | Oracle + High-Accuracy Detector (hedef >=90%) | Tamamlandı — Oracle = %100 doğruluk; sigma_only vs oracle_full p=0.115 (thesis_22 Section 4.3) |
+| 4 | Model Misspecification Robustness (A,k rejime bağlı) | Tamamlandı — thesis_22 Section 4.8 |
 
 ## 9. Model Misspecification Sonuçları (12 Nisan 2026)
 
@@ -120,6 +121,6 @@ t-test sonuçları:
 - sigma_only vs combined: p=0.217 (anlamlı degil)
 - sigma_only vs oracle_pure: p=0.098 (anlamlı degil)
 
-Yorum: Signal redundancy argumani misspec ortamda da gecerli. Strong variant calistirilmadi (p=0.88 yeterli guclu null result).
+Yorum: Signal redundancy argumani misspec ortamda da destekleniyor. Strong variant calistirilmadi; bu tez sürümünde future work olarak bırakıldı.
 
-Tum danishman deneyleri tamamlandi. Thesis_18 + decisions_log_5 hazir.
+Tum danishman deneyleri tamamlandi. Current manuscript: thesis_22 + decisions_log_6.

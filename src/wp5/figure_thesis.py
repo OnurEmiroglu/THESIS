@@ -12,6 +12,9 @@ from pathlib import Path
 import re
 import numpy as np
 import pandas as pd
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 # ── paths ────────────────────────────────────────────────────────────────
@@ -76,9 +79,9 @@ def fig1_sharpe_inv(oos: pd.DataFrame):
 
     labels = [STRAT_LABELS[s] for s in STRAT_ORDER]
 
-    for ax, col, title in [
-        (ax1, "sharpe_like", "Mean Sharpe Ratio (OOS, 20 Seeds)"),
-        (ax2, "inv_p99", "Inventory Risk — inv_p99 (OOS, 20 Seeds)"),
+    for ax, col, ylabel, panel_label in [
+        (ax1, "sharpe_like", "Sharpe", "Sharpe"),
+        (ax2, "inv_p99", "inv_p99 (lots)", "inv_p99"),
     ]:
         means, stds = [], []
         for s in STRAT_ORDER:
@@ -91,13 +94,10 @@ def fig1_sharpe_inv(oos: pd.DataFrame):
         ax.set_xticks(x)
         ax.set_xticklabels(labels, fontsize=9)
         ax.set_ylim(bottom=0)
-        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_ylabel(ylabel)
+        ax.set_title(panel_label, fontsize=11, fontweight="bold")
         ax.grid(axis="y", alpha=0.3)
         _bar_labels(ax, bars)
-
-    ax2.set_ylabel("inv_p99 (lots)")
-    fig.text(0.75, -0.02, "Note: Lower inv_p99 is better.",
-             ha="center", fontsize=9, style="italic")
 
     out = OUT_DIR / "fig1_sharpe_inv.png"
     fig.savefig(out, bbox_inches="tight")
@@ -114,13 +114,11 @@ def fig2_paired_seed(oos: pd.DataFrame):
     blind = oos[oos["strategy"] == "ppo_blind"].set_index("seed")
     seeds = sorted(set(aware.index) & set(blind.index))
 
-    for ax, col, title, pval, win_text in [
+    for ax, col, panel_label, pval in [
         (ax1, "sharpe_like",
-         "Sharpe Ratio: PPO-aware vs PPO-blind (per seed)", 0.261,
-         "Aware > Blind: 11/20 seeds"),
+         "Sharpe", 0.261),
         (ax2, "final_equity",
-         "Final Equity: PPO-aware vs PPO-blind (per seed)", 0.023,
-         "Aware > Blind: 9/20 seeds"),
+         "Final equity", 0.023),
     ]:
         x_vals = blind.loc[seeds, col].values
         y_vals = aware.loc[seeds, col].values
@@ -132,15 +130,13 @@ def fig2_paired_seed(oos: pd.DataFrame):
         ax.set_xlim(lo, hi)
         ax.set_ylim(lo, hi)
         ax.set_aspect("equal", adjustable="box")
-        xlabel = "PPO-blind Sharpe" if "Sharpe" in title else "PPO-blind Equity"
-        ylabel = "PPO-aware Sharpe" if "Sharpe" in title else "PPO-aware Equity"
+        xlabel = "PPO-blind Sharpe" if col == "sharpe_like" else "PPO-blind Equity"
+        ylabel = "PPO-aware Sharpe" if col == "sharpe_like" else "PPO-aware Equity"
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
-        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_title(panel_label, fontsize=11, fontweight="bold")
         ax.text(0.05, 0.05, f"p = {pval}", transform=ax.transAxes,
                 fontsize=10, verticalalignment="bottom")
-        ax.text(0.05, 0.92, win_text, transform=ax.transAxes,
-                fontsize=9, verticalalignment="top")
         ax.grid(alpha=0.3)
 
     out = OUT_DIR / "fig2_paired_seed.png"
@@ -171,14 +167,8 @@ def fig3_regime_sharpe(regime: pd.DataFrame):
     ax.set_xlabel("Volatility Regime")
     ax.set_ylabel("Mean Sharpe")
     ax.set_ylim(bottom=0)
-    ax.set_title("Sharpe Ratio by Volatility Regime", fontsize=12, fontweight="bold")
     ax.legend(loc="upper right")
     ax.grid(axis="y", alpha=0.3)
-
-    fig.text(0.5, -0.02,
-             "Regime-wise metrics are grouped by the true synthetic regime "
-             "(ex-post attribution).",
-             ha="center", fontsize=9, style="italic")
 
     out = OUT_DIR / "fig3_regime_sharpe.png"
     fig.savefig(out, bbox_inches="tight")
@@ -215,20 +205,11 @@ def fig4_detector_robustness(det: pd.DataFrame):
         ax.text(i + 0.10, blind_mean, f"{blind_mean:.3f}", va="center", fontsize=9)
 
     ax.set_xticks(x)
-    ax.set_xticklabels(detectors)
+    ax.set_xticklabels(["rv_baseline", "rv_dwell", "HMM"])
     ax.set_ylim(0.60, 0.80)
     ax.set_ylabel("Mean Sharpe")
-    ax.set_title("Detector Robustness: Mean Sharpe by Detector (20 Seeds)",
-                 fontsize=12, fontweight="bold")
     ax.legend(loc="upper right")
     ax.grid(axis="y", alpha=0.3)
-
-    annotation = ("rv_baseline: p=0.114 | rv_dwell: p=0.110 | "
-                  "HMM: p=0.082 (Sharpe, paired t-test)")
-    fig.text(0.5, -0.02, annotation, ha="center", fontsize=9, style="italic")
-    fig.text(0.5, -0.06,
-             "Y-axis is zoomed (0.60\u20130.80) to highlight detector-level differences.",
-             ha="center", fontsize=9, style="italic")
 
     out = OUT_DIR / "fig4_detector_robustness.png"
     fig.savefig(out, bbox_inches="tight")
@@ -247,19 +228,17 @@ def fig5_action_analysis(curves: pd.DataFrame):
                 .reset_index())
 
     fig, axes = plt.subplots(2, 2, figsize=(10, 6))
-    fig.suptitle("Action Distribution by Regime: PPO-aware vs PPO-blind",
-                 fontsize=12, fontweight="bold")
 
     strat_colors = {"ppo_aware": "#2E75B6", "ppo_blind": "#ED7D31"}
 
     configs = [
-        (axes[0, 0], "ppo_aware", "mean_h", "PPO-aware: Mean Half-Spread (h)", False),
-        (axes[0, 1], "ppo_blind", "mean_h", "PPO-blind: Mean Half-Spread (h)", False),
-        (axes[1, 0], "ppo_aware", "mean_m", "PPO-aware: Mean Skew (m)", True),
-        (axes[1, 1], "ppo_blind", "mean_m", "PPO-blind: Mean Skew (m)", True),
+        (axes[0, 0], "ppo_aware", "mean_h", "PPO-aware", "Mean h", False),
+        (axes[0, 1], "ppo_blind", "mean_h", "PPO-blind", "Mean h", False),
+        (axes[1, 0], "ppo_aware", "mean_m", "PPO-aware", "Mean m", True),
+        (axes[1, 1], "ppo_blind", "mean_m", "PPO-blind", "Mean m", True),
     ]
 
-    for ax, strat, col, title, show_zero in configs:
+    for ax, strat, col, panel_label, ylabel, show_zero in configs:
         sub = seed_agg[seed_agg["strategy"] == strat]
         x = np.arange(len(REGIMES))
         means, stds = [], []
@@ -271,7 +250,8 @@ def fig5_action_analysis(curves: pd.DataFrame):
                       color=strat_colors[strat])
         ax.set_xticks(x)
         ax.set_xticklabels(REGIMES)
-        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_title(panel_label, fontsize=11, fontweight="bold")
+        ax.set_ylabel(ylabel)
         ax.grid(axis="y", alpha=0.3)
         if show_zero:
             ax.axhline(0, color="black", linewidth=0.8, linestyle="-")

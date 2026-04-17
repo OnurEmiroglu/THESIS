@@ -1,5 +1,7 @@
 # Proje Tam Notlar
 
+> STALE/HISTORICAL SNAPSHOT (17 March 2026): This file is kept for chronology. It predates the final detector-full, 5-variant ablation, eta-regime, misspecification, thesis_22, and decisions_log_6 cleanup. Do not use it as the current source of truth; prefer README.md, thesis_22, and results CSVs.
+
 ## 1. Proje Genel Bakış
 
 **Konu:** Yüksek frekanslı piyasa yapıcılık (HFMM) — PPO tabanlı RL agent'ın farklı volatilite rejimlerinde (L/M/H) bid/ask kotasyonu öğrenmesi.

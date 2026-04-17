@@ -4,7 +4,8 @@ KIT Financial Engineering MSc Thesis
 
 ## Research Question
 Does a regime-aware PPO market-making agent outperform a regime-blind PPO agent?
-Current finding: null result — difference is statistically inconclusive (rv_baseline, 20 seeds). Pilot (3 seeds) shows null result across all three detector variants; full experiment (3 detectors x 20 seeds) in progress.
+Current finding: null result — difference is statistically inconclusive (rv_baseline, 20 seeds). Detector robustness full run (3 detectors × 20 seeds × 120 models): COMPLETE. rv_baseline p=0.114, rv_dwell p=0.110, HMM p=0.082. Null result confirmed across all detectors.
+Current manuscript: `manuscript/thesis_22.pdf`; decision log: `manuscript/decisions_log_6.pdf`.
 
 ## Structure
 - `src/` — all Python source code
@@ -21,8 +22,8 @@ Current finding: null result — difference is statistically inconclusive (rv_ba
 ## Strategies
 - **Naive**: fixed symmetric half-spread (h=2 ticks)
 - **Avellaneda-Stoikov**: inventory-aware analytical baseline
-- **PPO-aware**: PPO agent with regime label in observation
-- **PPO-blind**: PPO agent without regime label
+- **PPO-aware / PPO-blind**: original 4-strategy comparison with/without estimated regime label
+- **5-variant PPO ablation**: `ppo_sigma_only`, `ppo_regime_only`, `ppo_combined`, `ppo_oracle_pure`, `ppo_oracle_full`
 
 ## Regime Detection
 Three detector variants implemented and compared:
@@ -43,10 +44,12 @@ python -m src.wp2.compare_detectors
 ```
 
 ## Key Results
-- PPO variants outperform naive baseline in Sharpe (~0.85 vs ~0.75) and are comparable to AS (~0.85); AS produces higher absolute equity
-- Regime-aware vs regime-blind: null result (p=0.261 Sharpe-based paired t-test, 20 seeds)
-- Pilot (3 seeds): null result observed across all three detector variants
-- Full detector robustness experiment: 3 detectors x 20 seeds x 2 strategies = 120 models (in progress)
+- Original 4-strategy OOS run: PPO-aware/blind Sharpe 0.715/0.740 vs AS 0.105 and naive 0.127. AS wins on raw equity (~5.05 vs PPO ~4.10-4.42) by taking much larger inventory risk (inv_p99 ~30 lots vs PPO ~2 lots).
+- Regime-aware vs regime-blind: Sharpe difference is not significant (paired t-test p=0.261, 20 seeds); final equity favors PPO-blind (paired t-test p=0.023).
+- 5-variant ablation: `ppo_sigma_only` has the highest Sharpe (0.753); `ppo_oracle_full` does not significantly beat it (Sharpe p=0.115).
+- Regime-conditional eta run: `ppo_sigma_only` beats `ppo_combined` on Sharpe (p=0.0016), so etaH=5×etaL did not make explicit regime labels useful.
+- Mild model-misspecification run: `ppo_sigma_only` and `ppo_oracle_full` remain statistically indistinguishable on Sharpe (p=0.881).
+- Detector robustness full run (3 detectors × 20 seeds × 120 models): COMPLETE. rv_baseline p=0.114, rv_dwell p=0.110, HMM p=0.082. Null result confirmed across all detectors.
 
 ## Reproducibility
 Every run produces a timestamped directory under results/runs/ containing:
