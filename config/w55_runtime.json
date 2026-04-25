@@ -1,0 +1,21 @@
+{
+  "project": "thesis-hfmm",
+  "seed": 42,
+  "run_tag": "wp55-runtime-benchmark",
+  "job": "w55_runtime",
+  "market": {"mid0": 100.0, "tick_size": 0.01, "dt": 1.0, "sigma_mid_ticks": 0.5},
+  "regime": {"rv_window": 50, "warmup_steps": 1000},
+  "episode": {"n_steps": 8000},
+  "exec": {"A": 5.0, "k": 1.5, "fee_bps": 0.1, "latency_steps": 0},
+  "ppo": {
+    "total_timesteps": 100000,
+    "n_steps": 2048,
+    "batch_size": 64,
+    "n_epochs": 10,
+    "learning_rate": 3e-4,
+    "gamma": 0.99,
+    "policy": "MlpPolicy"
+  },
+  "env": {"use_regime": false, "eta": 1e-3},
+  "benchmark": {"devices": ["cpu", "cuda"], "seeds": [42, 123]}
+}

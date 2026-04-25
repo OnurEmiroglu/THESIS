@@ -78,6 +78,12 @@ def main():
             w5_ablation_skew(cfg, ctx)
         elif job == "w5_detector_compare":
             w5_detector_compare(cfg, ctx)
+        elif job == "w55_audit":
+            from src.wp5_5.job_w55_audit import run as run_w55_audit
+            run_w55_audit(cfg, ctx)
+        elif job == "w55_runtime":
+            from src.wp5_5.job_w55_runtime import run as run_w55_runtime
+            run_w55_runtime(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 
