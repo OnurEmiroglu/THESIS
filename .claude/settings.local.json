@@ -61,7 +61,11 @@
       "Bash(docx2pdf:*)",
       "Bash(claude update *)",
       "Bash(npm update *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(tasklist //FI \"IMAGENAME eq python.exe\" //FO CSV)",
+      "Bash(where soffice.exe)",
+      "Bash(where libreoffice *)",
+      "Bash(where pandoc *)"
     ]
   }
 }
