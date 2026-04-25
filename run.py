@@ -87,6 +87,9 @@ def main():
         elif job == "w55_calibration":
             from src.wp5_5.job_w55_calibration import run as run_w55_calibration
             run_w55_calibration(cfg, ctx)
+        elif job == "w6_sweep_pilot":
+            from src.wp6.job_w6_sweep_pilot import run as run_w6_sweep_pilot
+            run_w6_sweep_pilot(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 

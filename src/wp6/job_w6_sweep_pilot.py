@@ -1,0 +1,296 @@
+"""WP6 Signal Informativeness Sweep — PILOT.
+
+Do not interpret pilot outputs as final statistical evidence; pilot is
+for pipeline correctness, condition/variant wiring, and directional
+sanity only. The full WP6 sweep is planned at 20 seeds × 24 cells × 1M
+timesteps and will be run separately after pilot review.
+
+Grid: conditions × variants minus omit_cells. Per cell, train one PPO
+model on a degraded sigma_hat series (or the clean one for the `full`
+condition; `none` flips use_sigma=False on the env). Coarse-layer
+checkpoint: a model file already on disk causes the cell to be SKIPPED
+without appending a metrics row, so resumption after interruption does
+not double-count.
+"""
+
+from __future__ import annotations
+
+import copy
+import math
+import time
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from stable_baselines3 import PPO
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv
+
+from src.wp1.w1_as_baseline import compute_metrics
+from src.wp2.synth_regime import run_wp2
+from src.wp3.env import MMEnv
+from src.wp5_5.signal_degradation import (
+    apply_coarsen,
+    apply_lag,
+    apply_noise,
+    compute_clean_cutpoints,
+)
+
+
+VARIANT_FLAGS = {
+    "sigma_only":  {"use_sigma": True,  "regime_source": "none"},
+    "regime_only": {"use_sigma": False, "regime_source": "hat"},
+    "combined":    {"use_sigma": True,  "regime_source": "hat"},
+    "oracle_pure": {"use_sigma": False, "regime_source": "true"},
+    "oracle_full": {"use_sigma": True,  "regime_source": "true"},
+}
+
+PILOT_WARNING = (
+    "Do not interpret pilot outputs as final statistical evidence; pilot is\n"
+    "for pipeline correctness, condition/variant wiring, and directional\n"
+    "sanity only. The full WP6 sweep is planned at 20 seeds × 24 cells × 1M\n"
+    "timesteps and will be run separately after pilot review."
+)
+
+
+def _build_degraded(condition, sigma_clean, sigma_std_post,
+                    alpha, k_steps, cutpoints, rng):
+    if condition == "full":
+        return sigma_clean.copy()
+    if condition == "noisy":
+        return apply_noise(sigma_clean, alpha * sigma_std_post, rng)
+    if condition == "lagged":
+        return apply_lag(sigma_clean, k_steps)
+    if condition == "coarsened":
+        return apply_coarsen(sigma_clean, cutpoints)
+    if condition == "none":
+        return sigma_clean.copy()
+    raise ValueError(f"Unknown condition: {condition}")
+
+
+def _eval_model(model, cfg_eval, df_exog_eval, seed):
+    env = MMEnv(cfg_eval)
+    obs, _ = env.reset(seed=seed, options={"exog": df_exog_eval})
+    n = int(cfg_eval["episode"]["n_steps"])
+    equity = np.zeros(n + 1)
+    inv = np.zeros(n + 1, dtype=int)
+    fills = np.zeros(n, dtype=int)
+    equity[0] = env._state.equity
+    inv[0] = env._state.inv
+    for t in range(n):
+        action, _ = model.predict(obs, deterministic=True)
+        obs, _r, _term, _trunc, info = env.step(action)
+        equity[t + 1] = info["equity"]
+        inv[t + 1] = info["inv"]
+        fills[t] = info["fills"]
+    return compute_metrics(equity, inv, fills, dt=cfg_eval["market"]["dt"])
+
+
+def run(cfg: dict, ctx) -> None:
+    sweep = cfg["sweep"]
+    conditions = list(sweep["conditions"])
+    variants = list(sweep["variants"])
+    omit_cells = [tuple(c) for c in sweep.get("omit_cells", [])]
+    seeds = list(sweep["seeds"])
+    alpha = float(sweep["noisy_alpha"])
+    k_steps = int(sweep["lagged_k"])
+    n_bins = int(sweep["coarsened_n_bins"])
+
+    # Generic grid validation
+    total_cells = len(conditions) * len(variants) - len(omit_cells)
+    total_trainings = total_cells * len(seeds)
+    assert total_cells > 0, f"total_cells must be > 0, got {total_cells}"
+    assert total_trainings > 0, f"total_trainings must be > 0, got {total_trainings}"
+
+    # Pilot-specific assertion
+    is_real_pilot = (
+        cfg.get("run_tag") == "wp6-sweep-pilot"
+        and cfg.get("job") == "w6_sweep_pilot"
+        and len(seeds) > 1
+    )
+    if is_real_pilot:
+        assert total_cells == 24, f"Real pilot must have 24 cells, got {total_cells}"
+        assert len(seeds) == 3, f"Real pilot must have 3 seeds, got {len(seeds)}"
+        assert total_trainings == 72, f"Real pilot must have 72 trainings, got {total_trainings}"
+
+    # Banner
+    est_min = total_trainings * 17
+    print()
+    print("=" * 72)
+    print("WP6 Signal Informativeness Sweep — PILOT")
+    print(f"Cells: {total_cells}  Trainings: {total_trainings}  Seeds: {seeds}")
+    print(f"Est. wall time @ 17 min/cell: {est_min} min (~{est_min/60:.1f} h)")
+    print("=" * 72)
+    print(PILOT_WARNING)
+    print("=" * 72)
+    print(flush=True)
+
+    out_dir = Path(ctx.run_dir)
+    models_root = out_dir / "models"
+    models_root.mkdir(exist_ok=True)
+
+    n_full = int(cfg["episode"]["n_steps"])
+    train_frac = float(sweep.get("train_frac", 0.8))
+    n_train = math.floor(train_frac * n_full)
+    n_test = n_full - n_train
+    warmup_end = int(cfg["regime"]["warmup_steps"])
+    total_timesteps = int(cfg["wp4"]["total_timesteps"])
+
+    rows = []
+    trained = 0
+    skipped = 0
+    omit_set = set(omit_cells)
+
+    idx_train_end = n_train + 1
+    idx_test_start = n_train
+    idx_test_end = n_train + n_test + 1
+
+    for seed in seeds:
+        ctx.logger.info(f"=== Seed {seed} ===")
+        df_exog, _, _ = run_wp2(cfg, seed, ctx=ctx)
+        sigma_clean = df_exog["sigma_hat"].to_numpy(dtype=np.float64, copy=True)
+        sigma_std_post = float(np.nanstd(sigma_clean[warmup_end:]))
+        cutpoints = compute_clean_cutpoints(sigma_clean, warmup_end, n_bins=n_bins)
+        deg_rng = np.random.default_rng(seed)
+
+        seed_dir = models_root / f"seed{seed}"
+        seed_dir.mkdir(exist_ok=True)
+
+        for condition in conditions:
+            sigma_deg = _build_degraded(
+                condition, sigma_clean, sigma_std_post,
+                alpha, k_steps, cutpoints, deg_rng,
+            )
+            df_full = df_exog.copy()
+            df_full["sigma_hat"] = sigma_deg
+
+            for variant in variants:
+                if (condition, variant) in omit_set:
+                    continue
+
+                model_path = seed_dir / f"{condition}__{variant}.zip"
+                if model_path.exists():
+                    msg = f"SKIP {condition}/{variant} (already trained)"
+                    print(msg, flush=True)
+                    ctx.logger.info(msg)
+                    skipped += 1
+                    continue
+
+                vflags = VARIANT_FLAGS[variant]
+                cfg_tr = copy.deepcopy(cfg)
+                cfg_tr["wp3"] = {
+                    **cfg_tr.get("wp3", {}),
+                    "use_sigma": vflags["use_sigma"],
+                    "regime_source": vflags["regime_source"],
+                }
+                cfg_tr["episode"] = {**cfg_tr["episode"], "n_steps": n_train}
+
+                exog_train = df_full.iloc[:idx_train_end].reset_index(drop=True)
+                exog_test = df_full.iloc[idx_test_start:idx_test_end].reset_index(drop=True)
+
+                env_tr = MMEnv(cfg_tr)
+                env_tr.reset(seed=seed, options={"exog": exog_train})
+                vec_env = DummyVecEnv([lambda _e=Monitor(env_tr): _e])
+
+                wp4 = cfg["wp4"]
+                t_train_start = time.time()
+                model = PPO(
+                    "MlpPolicy", vec_env, seed=seed,
+                    learning_rate=float(wp4["learning_rate"]),
+                    n_steps=int(wp4["n_steps"]),
+                    batch_size=int(wp4["batch_size"]),
+                    n_epochs=int(wp4["n_epochs"]),
+                    gamma=float(wp4["gamma"]),
+                    gae_lambda=float(wp4["gae_lambda"]),
+                    clip_range=float(wp4["clip_range"]),
+                    ent_coef=float(wp4["ent_coef"]),
+                    verbose=0,
+                    device=cfg.get("wp4", {}).get("device", "cpu"),
+                )
+                model.learn(total_timesteps=total_timesteps)
+                model.save(str(model_path))
+                vec_env.close()
+                train_seconds = time.time() - t_train_start
+
+                cfg_ev = copy.deepcopy(cfg)
+                cfg_ev["wp3"] = {
+                    **cfg_ev.get("wp3", {}),
+                    "use_sigma": vflags["use_sigma"],
+                    "regime_source": vflags["regime_source"],
+                }
+                cfg_ev["episode"] = {**cfg_ev["episode"], "n_steps": n_test}
+
+                t_eval_start = time.time()
+                m = _eval_model(model, cfg_ev, exog_test, seed)
+                eval_seconds = time.time() - t_eval_start
+
+                rows.append({
+                    "seed": seed,
+                    "condition": condition,
+                    "variant": variant,
+                    "sharpe_like": m["sharpe_like"],
+                    "final_equity": m["final_equity"],
+                    "fill_rate": m["fill_rate"],
+                    "inv_p99": m["inv_p99"],
+                    "train_seconds": train_seconds,
+                    "eval_seconds": eval_seconds,
+                })
+                trained += 1
+                ctx.logger.info(
+                    f"[{seed}] {condition}/{variant}: trained {train_seconds:.1f}s "
+                    f"eval {eval_seconds:.1f}s sharpe={m['sharpe_like']:.4f} "
+                    f"inv_p99={m['inv_p99']:.0f}"
+                )
+
+    df_metrics = pd.DataFrame(rows)
+    metrics_path = out_dir / "metrics_sweep_pilot.csv"
+    df_metrics.to_csv(metrics_path, index=False)
+    ctx.logger.info(f"Wrote {metrics_path.as_posix()}")
+
+    md = []
+    md.append("# WP6 Signal Informativeness Sweep — Pilot Summary")
+    md.append("")
+    md.append(f"Run ID: `{ctx.run_id}`")
+    md.append("")
+    md.append(f"- trained = {trained}")
+    md.append(f"- skipped = {skipped}")
+    md.append("")
+    if len(df_metrics) > 0:
+        ts = df_metrics["train_seconds"]
+        md.append("## Cell timing distribution (train_seconds)")
+        md.append("")
+        md.append(f"- min: {ts.min():.1f}")
+        md.append(f"- median: {ts.median():.1f}")
+        md.append(f"- max: {ts.max():.1f}")
+        md.append(f"- p95: {ts.quantile(0.95):.1f}")
+        md.append("")
+        md.append("## Per-cell mean across seeds")
+        md.append("")
+        agg = (df_metrics
+               .groupby(["condition", "variant"], sort=False)
+               [["sharpe_like", "inv_p99"]]
+               .mean()
+               .reset_index()
+               .sort_values(["condition", "variant"]))
+        md.append("| condition | variant | sharpe_like_mean | inv_p99_mean |")
+        md.append("|---|---|---:|---:|")
+        for _, r in agg.iterrows():
+            md.append(
+                f"| {r['condition']} | {r['variant']} | "
+                f"{r['sharpe_like']:.4f} | {r['inv_p99']:.1f} |"
+            )
+        md.append("")
+    md.append("## Reminder")
+    md.append("")
+    md.append(PILOT_WARNING)
+    md.append("")
+    md.append("## Next step")
+    md.append("")
+    md.append(
+        "Review pilot_summary.md, then run the full WP6 sweep at "
+        "20 seeds × 1M timesteps."
+    )
+    summary_path = out_dir / "pilot_summary.md"
+    summary_path.write_text("\n".join(md), encoding="utf-8")
+    ctx.logger.info(f"Wrote {summary_path.as_posix()}")
+    print(f"Trained: {trained}   Skipped: {skipped}", flush=True)
