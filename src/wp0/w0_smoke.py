@@ -14,7 +14,7 @@ except Exception:
 
 import matplotlib.pyplot as plt
 
-from .run_context import RunContext, save_json
+from src.run_context import RunContext, save_json
 
 
 def wp0_smoke(ctx: RunContext) -> None:

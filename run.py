@@ -22,12 +22,12 @@ import argparse
 import json
 
 from src.run_context import setup_run, finalize_run
-from src.w0_smoke import wp0_smoke
-from src.w1_naive_sweep import job_entry as w1_naive_sweep
-from src.w1_as_baseline import job_entry as w1_as_baseline
-from src.w1_compare import job_entry as w1_compare
+from src.wp0.w0_smoke import wp0_smoke
+from src.wp1.w1_naive_sweep import job_entry as w1_naive_sweep
+from src.wp1.w1_as_baseline import job_entry as w1_as_baseline
+from src.wp1.w1_compare import job_entry as w1_compare
 from src.wp2.job_w2_synth import job_entry as w2_synth
-from src.w3_sanity import job_entry as w3_sanity
+from src.wp3.w3_sanity import job_entry as w3_sanity
 from src.wp4.job_w4_ppo import job_entry as w4_ppo
 from src.wp5.job_w5_eval import job_entry as w5_eval
 from src.wp5.job_w5_ablation_eta import job_entry as w5_ablation_eta

@@ -16,7 +16,7 @@ from stable_baselines3 import PPO
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.w1_as_baseline import as_deltas_ticks, compute_metrics
+from src.wp1.w1_as_baseline import as_deltas_ticks, compute_metrics
 from src.wp1.sim import ExecParams, MarketParams
 from src.wp2.synth_regime import run_wp2
 from src.wp3.env import MMEnv

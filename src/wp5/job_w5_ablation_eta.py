@@ -18,7 +18,7 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 
-from src.w1_as_baseline import compute_metrics
+from src.wp1.w1_as_baseline import compute_metrics
 from src.wp2.synth_regime import run_wp2
 from src.wp3.env import MMEnv
 

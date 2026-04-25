@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from src.w1_as_baseline import as_deltas_ticks, compute_metrics
+from src.wp1.w1_as_baseline import as_deltas_ticks, compute_metrics
 from src.wp1.sim import ExecParams, MarketParams, MMSimulator
 from src.wp2.synth_regime import run_wp2
 from src.wp3.env import MMEnv
