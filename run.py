@@ -84,6 +84,9 @@ def main():
         elif job == "w55_runtime":
             from src.wp5_5.job_w55_runtime import run as run_w55_runtime
             run_w55_runtime(cfg, ctx)
+        elif job == "w55_calibration":
+            from src.wp5_5.job_w55_calibration import run as run_w55_calibration
+            run_w55_calibration(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 

@@ -131,3 +131,50 @@ def threshold_overlap_rate(
     in_lm = (post >= lo_lm) & (post <= hi_lm)
     in_mh = (post >= lo_mh) & (post <= hi_mh)
     return float((in_lm | in_mh).mean())
+
+
+def nrmse(
+    clean: np.ndarray,
+    degraded: np.ndarray,
+    mask: np.ndarray,
+) -> float:
+    """Normalised RMSE: sqrt(mean((c-d)^2)) / std(c), restricted to mask, NaN-safe."""
+    c = np.asarray(clean)[mask]
+    d = np.asarray(degraded)[mask]
+    c, d = _drop_invalid(c, d)
+    if len(c) < 2:
+        return 0.0
+    sd = float(np.std(c, ddof=0))
+    if sd == 0.0:
+        return 0.0
+    rmse = float(np.sqrt(np.mean((c - d) ** 2)))
+    return rmse / sd
+
+
+def regime_crossing_rate(
+    degraded_sigma: np.ndarray,
+    thresh_LM: float,
+    thresh_MH: float,
+    warmup_end: int,
+) -> float:
+    """Fraction of consecutive post-warmup steps where rv_baseline regime label flips."""
+    safe = np.asarray(degraded_sigma, dtype=np.float64).copy()
+    nan_mask = np.isnan(safe)
+    if nan_mask.any():
+        safe[nan_mask] = 0.0
+    pred = assign_regime_hat(safe, thresh_LM, thresh_MH, warmup_end)
+    n = len(safe)
+    transitions = 0
+    counted = 0
+    prev = None
+    for t in range(warmup_end, n):
+        cur = pred[t]
+        if cur == "warmup":
+            prev = None
+            continue
+        if prev is not None:
+            counted += 1
+            if cur != prev:
+                transitions += 1
+        prev = cur
+    return 0.0 if counted == 0 else transitions / counted
