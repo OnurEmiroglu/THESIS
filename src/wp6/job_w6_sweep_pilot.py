@@ -11,6 +11,16 @@ condition; `none` flips use_sigma=False on the env). Coarse-layer
 checkpoint: a model file already on disk causes the cell to be SKIPPED
 without appending a metrics row, so resumption after interruption does
 not double-count.
+
+For the `none` condition, use_sigma is forced to False regardless of
+variant flags. The (none, sigma_only) cell is omitted entirely;
+remaining 4 variants under `none` train under use_sigma=False with
+their respective regime_source. By design, regime_only and oracle_pure
+are condition-invariant: the regime detector operates on the clean
+sigma upstream of the observation manipulation, so the regime label
+quality is constant across conditions. This is intended scope —
+the experiment isolates the marginal value of the explicit regime
+label given a fixed-quality regime estimate.
 """
 
 from __future__ import annotations
@@ -64,6 +74,8 @@ def _build_degraded(condition, sigma_clean, sigma_std_post,
     if condition == "coarsened":
         return apply_coarsen(sigma_clean, cutpoints)
     if condition == "none":
+        # Series is unused: use_sigma_eff is forced False at the variant level
+        # for the none condition, so MMEnv zero-fills the sigma slot.
         return sigma_clean.copy()
     raise ValueError(f"Unknown condition: {condition}")
 
@@ -177,10 +189,11 @@ def run(cfg: dict, ctx) -> None:
                     continue
 
                 vflags = VARIANT_FLAGS[variant]
+                use_sigma_eff = vflags["use_sigma"] and condition != "none"
                 cfg_tr = copy.deepcopy(cfg)
                 cfg_tr["wp3"] = {
                     **cfg_tr.get("wp3", {}),
-                    "use_sigma": vflags["use_sigma"],
+                    "use_sigma": use_sigma_eff,
                     "regime_source": vflags["regime_source"],
                 }
                 cfg_tr["episode"] = {**cfg_tr["episode"], "n_steps": n_train}
@@ -215,7 +228,7 @@ def run(cfg: dict, ctx) -> None:
                 cfg_ev = copy.deepcopy(cfg)
                 cfg_ev["wp3"] = {
                     **cfg_ev.get("wp3", {}),
-                    "use_sigma": vflags["use_sigma"],
+                    "use_sigma": use_sigma_eff,
                     "regime_source": vflags["regime_source"],
                 }
                 cfg_ev["episode"] = {**cfg_ev["episode"], "n_steps": n_test}
