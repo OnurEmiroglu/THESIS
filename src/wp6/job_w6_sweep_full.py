@@ -1,26 +1,24 @@
-"""WP6 Signal Informativeness Sweep — PILOT.
+"""Full WP6 Signal Informativeness Sweep — 20 seeds × 24 cells × 1M timesteps.
 
-Do not interpret pilot outputs as final statistical evidence; pilot is
-for pipeline correctness, condition/variant wiring, and directional
-sanity only. The full WP6 sweep is planned at 20 seeds × 24 cells × 1M
-timesteps and will be run separately after pilot review.
+This is the thesis's central empirical experiment. Outputs feed Chapter 5
+directly. Do not interpret partial results as final until all 480 cells
+have completed. Do not interrupt unless necessary; if interrupted, resume
+with `python run.py --config config/w6_sweep_full.json --resume <run_id>`
+where <run_id> is the original run dir name.
 
-Grid: conditions × variants minus omit_cells. Per cell, train one PPO
-model on a degraded sigma_hat series (or the clean one for the `full`
-condition; `none` flips use_sigma=False on the env). Coarse-layer
-checkpoint: a model file already on disk causes the cell to be SKIPPED
-without appending a metrics row, so resumption after interruption does
-not double-count.
+Uses the same pipeline as the pilot (verified bug-free in commit 3144051).
+The `none` condition forces use_sigma=False at the variant level — see
+src/wp6/job_w6_sweep_pilot.py docstring for the full design rationale.
+By design, regime_only and oracle_pure are condition-invariant: the
+regime detector operates on the clean upstream sigma, so the regime
+label quality is constant across conditions; the experiment isolates the
+marginal value of the explicit regime label given a fixed-quality regime
+estimate.
 
-For the `none` condition, use_sigma is forced to False regardless of
-variant flags. The (none, sigma_only) cell is omitted entirely;
-remaining 4 variants under `none` train under use_sigma=False with
-their respective regime_source. By design, regime_only and oracle_pure
-are condition-invariant: the regime detector operates on the clean
-sigma upstream of the observation manipulation, so the regime label
-quality is constant across conditions. This is intended scope —
-the experiment isolates the marginal value of the explicit regime
-label given a fixed-quality regime estimate.
+Coarse-layer checkpointing: a model file already on disk causes the cell
+to be skipped. In --resume mode, both the model .zip and the
+corresponding metrics row must exist; orphan state raises a RuntimeError
+(see src/wp6/_resume.py).
 """
 
 from __future__ import annotations
@@ -56,11 +54,9 @@ VARIANT_FLAGS = {
     "oracle_full": {"use_sigma": True,  "regime_source": "true"},
 }
 
-PILOT_WARNING = (
-    "Do not interpret pilot outputs as final statistical evidence; pilot is\n"
-    "for pipeline correctness, condition/variant wiring, and directional\n"
-    "sanity only. The full WP6 sweep is planned at 20 seeds × 24 cells × 1M\n"
-    "timesteps and will be run separately after pilot review."
+FULL_BANNER_NOTE = (
+    "FULL SWEEP — thesis Chapter 5 input. 20 seeds × 24 cells × 1M timesteps.\n"
+    "If interrupted, resume with --resume <run_id>."
 )
 
 
@@ -115,26 +111,26 @@ def run(cfg: dict, ctx) -> None:
     assert total_cells > 0, f"total_cells must be > 0, got {total_cells}"
     assert total_trainings > 0, f"total_trainings must be > 0, got {total_trainings}"
 
-    # Pilot-specific assertion
-    is_real_pilot = (
-        cfg.get("run_tag") == "wp6-sweep-pilot"
-        and cfg.get("job") == "w6_sweep_pilot"
-        and len(seeds) > 1
+    # Full-sweep-specific assertion
+    is_real_full = (
+        cfg.get("run_tag") == "wp6-sweep-full"
+        and cfg.get("job") == "w6_sweep_full"
+        and len(seeds) > 3
     )
-    if is_real_pilot:
-        assert total_cells == 24, f"Real pilot must have 24 cells, got {total_cells}"
-        assert len(seeds) == 3, f"Real pilot must have 3 seeds, got {len(seeds)}"
-        assert total_trainings == 72, f"Real pilot must have 72 trainings, got {total_trainings}"
+    if is_real_full:
+        assert total_cells == 24, f"Real full sweep must have 24 cells, got {total_cells}"
+        assert len(seeds) == 20, f"Real full sweep must have 20 seeds, got {len(seeds)}"
+        assert total_trainings == 480, f"Real full sweep must have 480 trainings, got {total_trainings}"
 
-    # Banner
     est_min = total_trainings * 17
     print()
     print("=" * 72)
-    print("WP6 Signal Informativeness Sweep — PILOT")
-    print(f"Cells: {total_cells}  Trainings: {total_trainings}  Seeds: {seeds}")
-    print(f"Est. wall time @ 17 min/cell: {est_min} min (~{est_min/60:.1f} h)")
+    print("WP6 Signal Informativeness Sweep — FULL SWEEP")
+    print(f"Cells: {total_cells}  Trainings: {total_trainings}  Seeds: {len(seeds)}")
+    print(f"Est. wall time @ 17 min/cell: {est_min} min "
+          f"(~{est_min/60:.1f} h, ~{est_min/60/24:.1f} days)")
     print("=" * 72)
-    print(PILOT_WARNING)
+    print(FULL_BANNER_NOTE)
     print("=" * 72)
     print(flush=True)
 
@@ -149,7 +145,7 @@ def run(cfg: dict, ctx) -> None:
     warmup_end = int(cfg["regime"]["warmup_steps"])
     total_timesteps = int(cfg["wp4"]["total_timesteps"])
 
-    metrics_path = out_dir / "metrics_sweep_pilot.csv"
+    metrics_path = out_dir / "metrics_sweep_full.csv"
     is_resume = getattr(ctx, "resume_run_id", None) is not None
     if is_resume:
         existing_rows, completed_set = load_completed_set(metrics_path)
@@ -262,7 +258,7 @@ def run(cfg: dict, ctx) -> None:
                 m = _eval_model(model, cfg_ev, exog_test, seed)
                 eval_seconds = time.time() - t_eval_start
 
-                rows.append({
+                new_row = {
                     "seed": seed,
                     "condition": condition,
                     "variant": variant,
@@ -272,7 +268,11 @@ def run(cfg: dict, ctx) -> None:
                     "inv_p99": m["inv_p99"],
                     "train_seconds": train_seconds,
                     "eval_seconds": eval_seconds,
-                })
+                }
+                rows.append(new_row)
+                # Persist metric rows incrementally so a kill mid-cell never leaves
+                # an orphan model.zip without its metrics row in the next resume.
+                pd.DataFrame(existing_rows + rows).to_csv(metrics_path, index=False)
                 trained += 1
                 ctx.logger.info(
                     f"[{seed}] {condition}/{variant}: trained {train_seconds:.1f}s "
@@ -289,7 +289,7 @@ def run(cfg: dict, ctx) -> None:
     )
 
     md = []
-    md.append("# WP6 Signal Informativeness Sweep — Pilot Summary")
+    md.append("# WP6 Signal Informativeness Sweep — Full Summary")
     md.append("")
     md.append(f"Run ID: `{ctx.run_id}`")
     md.append("")
@@ -323,15 +323,16 @@ def run(cfg: dict, ctx) -> None:
         md.append("")
     md.append("## Reminder")
     md.append("")
-    md.append(PILOT_WARNING)
+    md.append(FULL_BANNER_NOTE)
     md.append("")
     md.append("## Next step")
     md.append("")
     md.append(
-        "Review pilot_summary.md, then run the full WP6 sweep at "
-        "20 seeds × 1M timesteps."
+        "Review full_summary.md, then proceed with Chapter 5 analysis "
+        "(per-condition × per-variant Sharpe distribution, paired-seed "
+        "comparison, sensitivity check at α=0.20 / k=10)."
     )
-    summary_path = out_dir / "pilot_summary.md"
+    summary_path = out_dir / "full_summary.md"
     summary_path.write_text("\n".join(md), encoding="utf-8")
     ctx.logger.info(f"Wrote {summary_path.as_posix()}")
     print(f"Trained: {trained}   Skipped: {skipped}", flush=True)

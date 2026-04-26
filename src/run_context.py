@@ -118,11 +118,16 @@ class RunContext:
     config: Dict[str, Any]
     logger: logging.Logger
     metrics: CSVMetricLogger
+    resume_run_id: Optional[str] = None
 
 
 # Yeni bir deney çalıştırmasını başlatır: dizin oluşturur, seed ayarlar,
 # config snapshot ve meta bilgilerini kaydeder, logger ve metrics nesnelerini döner.
-def setup_run(config_path: str | Path, results_root: str | Path = "results/runs") -> RunContext:
+def setup_run(
+    config_path: str | Path,
+    results_root: str | Path = "results/runs",
+    resume_run_id: Optional[str] = None,
+) -> RunContext:
     config_path = Path(config_path)
     cfg = load_json(config_path)
 
@@ -130,31 +135,42 @@ def setup_run(config_path: str | Path, results_root: str | Path = "results/runs"
         raise ValueError("Config must include an integer field: 'seed'")
 
     seed = int(cfg["seed"])
-    run_id = make_run_id(seed=seed, run_tag=cfg.get("run_tag"))
-
     results_root = Path(results_root)
-    run_dir = results_root / run_id
-    plots_dir = run_dir / "plots"
-    run_dir.mkdir(parents=True, exist_ok=False)
-    plots_dir.mkdir(parents=True, exist_ok=True)
+    if resume_run_id is not None:
+        run_id = resume_run_id
+        run_dir = results_root / run_id
+        if not run_dir.exists():
+            raise FileNotFoundError(
+                f"--resume target does not exist: {run_dir.as_posix()}"
+            )
+        plots_dir = run_dir / "plots"
+        plots_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        run_id = make_run_id(seed=seed, run_tag=cfg.get("run_tag"))
+        run_dir = results_root / run_id
+        plots_dir = run_dir / "plots"
+        run_dir.mkdir(parents=True, exist_ok=False)
+        plots_dir.mkdir(parents=True, exist_ok=True)
 
     set_global_seed(seed)
 
     logger = build_logger(run_dir)
 
     cfg = {**cfg, "run_id": run_id}
-    save_json(run_dir / "config_snapshot.json", cfg)
-    meta = {
-        "run_id": run_id,
-        "started_utc": datetime.now(timezone.utc).isoformat(),
-        "config_path": str(config_path.as_posix()),
-        "git_commit": get_git_commit_short(),
-        "python": sys.version,
-        "platform": platform.platform(),
-    }
-    save_json(run_dir / "meta.json", meta)
-
-    logger.info(f"Run started: {run_id}")
+    if resume_run_id is None:
+        save_json(run_dir / "config_snapshot.json", cfg)
+        meta = {
+            "run_id": run_id,
+            "started_utc": datetime.now(timezone.utc).isoformat(),
+            "config_path": str(config_path.as_posix()),
+            "git_commit": get_git_commit_short(),
+            "python": sys.version,
+            "platform": platform.platform(),
+        }
+        save_json(run_dir / "meta.json", meta)
+        logger.info(f"Run started: {run_id}")
+    else:
+        logger.info(f"Run RESUMED: {run_id}")
     logger.info(f"Run dir: {run_dir.as_posix()}")
 
     metrics = CSVMetricLogger(run_dir / "metrics.csv")
@@ -165,6 +181,7 @@ def setup_run(config_path: str | Path, results_root: str | Path = "results/runs"
         config=cfg,
         logger=logger,
         metrics=metrics,
+        resume_run_id=resume_run_id,
     )
 
 # Çalıştırmayı sonlandırır: status.json dosyasına başarı/hata durumunu yazar.

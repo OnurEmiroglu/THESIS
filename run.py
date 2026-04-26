@@ -39,12 +39,23 @@ from src.wp5.job_w5_detector_compare import job_entry as w5_detector_compare
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--config", type=str, default="config/base.json")
+    p.add_argument(
+        "--resume",
+        type=str,
+        default=None,
+        help=(
+            "Resume an existing run dir by ID (e.g. "
+            "20260426-012241_seed42_wp6-sweep-pilot_6508b4f). The job will reuse "
+            "that run dir, skip completed model files, and append metrics rows "
+            "for newly trained cells only."
+        ),
+    )
     return p.parse_args()
 
 
 def main():
     args = parse_args()
-    ctx = setup_run(args.config)
+    ctx = setup_run(args.config, resume_run_id=args.resume)
 
     try:
         # setup_run bazı yapılarda cfg'yi ctx içine koyar; yoksa dosyadan okuruz
@@ -90,6 +101,9 @@ def main():
         elif job == "w6_sweep_pilot":
             from src.wp6.job_w6_sweep_pilot import run as run_w6_sweep_pilot
             run_w6_sweep_pilot(cfg, ctx)
+        elif job == "w6_sweep_full":
+            from src.wp6.job_w6_sweep_full import run as run_w6_sweep_full
+            run_w6_sweep_full(cfg, ctx)
         else:
             raise ValueError(f"Unknown job: {job}")
 
