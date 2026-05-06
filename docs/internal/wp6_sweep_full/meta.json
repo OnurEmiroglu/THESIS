@@ -1,0 +1,8 @@
+{
+  "run_id": "20260426-105115_seed42_wp6-sweep-full_ce849a0",
+  "started_utc": "2026-04-26T10:51:15.396628+00:00",
+  "config_path": "config/w6_sweep_full.json",
+  "git_commit": "ce849a0",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0"
+}
