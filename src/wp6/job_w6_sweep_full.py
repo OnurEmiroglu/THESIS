@@ -169,6 +169,14 @@ def run(cfg: dict, ctx) -> None:
         ctx.logger.info(f"=== Seed {seed} ===")
         df_exog, _, _ = run_wp2(cfg, seed, ctx=ctx)
         sigma_clean = df_exog["sigma_hat"].to_numpy(dtype=np.float64, copy=True)
+        # NOTE (calibration scope): sigma_std_post is computed from the full
+        # post-warmup span (training + OOS test). The synthetic series is
+        # design-stationary (sticky Markov chain on a stationary process), so
+        # the std differs between train-only and full-span calibration by an
+        # estimated <10%. The directional Chapter 5 findings (Cohen's dz
+        # between -0.57 and -0.91 for combined < sigma_only) are robust to
+        # this scale. See thesis §5.1 calibration-range caveat. Future work
+        # may recalibrate using training-only data for stricter OOS hygiene.
         sigma_std_post = float(np.nanstd(sigma_clean[warmup_end:]))
         cutpoints = compute_clean_cutpoints(sigma_clean, warmup_end, n_bins=n_bins)
         deg_rng = np.random.default_rng(seed)
