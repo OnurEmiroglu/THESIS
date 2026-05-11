@@ -140,9 +140,24 @@ def apply_dwell_filter(
     regime_labels: list[str],
     min_dwell: int = 5,
 ) -> list[str]:
-    """Replace regime runs shorter than *min_dwell* with the previous regime.
+    """Offline dwell smoothing for regime labels.
 
-    "warmup" labels pass through unchanged and are not counted as regime runs.
+    NOT CAUSAL. To decide the label at index i, this function scans
+    forward up to min_dwell positions to compute the run length starting
+    at i, then overwrites short runs with the previous label. This
+    introduces a bounded forward look (up to min_dwell steps) and must
+    not be used in any pipeline that claims online or causal detection.
+
+    Intended use: offline robustness comparison only (see compare_detectors.py
+    and stats_detector_robustness.py). All main WP4/WP5/WP6 pipelines use
+    the causal baseline detector assign_regime_hat.
+
+    Args:
+        regime_labels: list of labels (including "warmup")
+        min_dwell: minimum run length; shorter runs are smoothed
+
+    Returns:
+        smoothed labels, same length
     """
     out = list(regime_labels)
     n = len(out)
