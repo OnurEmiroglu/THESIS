@@ -990,8 +990,8 @@ add_normal(dst, (
     "(full → noisy → lagged → coarsened → none) PPO ajanının beş gözlem-uzayı varyantı "
     "(sigma_only, combined, regime_only, oracle_full, oracle_pure) altında nasıl davrandığını "
     "raporlar. Kalibrasyon parametreleri Karar #46'da belirlenmiştir (noisy α = 0.40, lagged "
-    "k = 20, coarsened binning). Toplam 5 koşul × 5 varyant × 20 tohum = 480 hücre eğitilmiş "
-    "ve her hücrede deterministik OOS değerlendirmesi yapılmıştır."
+    "k = 20, coarsened binning). Toplam 4 koşul × 5 varyant + 1 koşul × 4 varyant = 24 hücre "
+    "× 20 tohum = 480 koşum eğitilmiş ve her koşumda deterministik OOS değerlendirmesi yapılmıştır."
 ))
 
 add_normal(dst, (
