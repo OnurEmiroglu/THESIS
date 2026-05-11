@@ -1,12 +1,17 @@
-"""Generate thesis_27.docx.
-Based on thesis_26 with WP6 (Signal Informativeness Sweep) additions:
-  (1) new Chapter 5 "Sinyal Bilgilendiricilik Süpürmesi" inserted between
-      Chapter 4 and the (renumbered) Conclusion. Three-level structure
-      (5.1 rejected hypothesis, 5.2 stronger empirical pattern,
-      5.3 refined interpretation) per wp6_notes.md and Decision #47.
-  (2) Existing "5. SONUÇ" renumbered to "6. SONUÇ" (no content change).
-Cover-page marker updated to Sürüm 27.
-Decisions log NOT updated in this round — Decision #47 is in log_11."""
+"""Generate thesis_28.docx.
+Based on thesis_27 with Lane-A C1/C2/C3 caveat additions:
+  (1) §3.3 footnote on rv_dwell offline non-causality;
+  (2) §3.8 methodology clarification — all reported PPO numbers come
+      from WP5 (70/30 split); WP4 is in-sample pilot only;
+  (3) §5.1 calibration-range caveat extension on noisy α full-span vs
+      training-only calibration (<10% scale shift, directional findings
+      robust).
+Lane-B B1-B3 fixes (Appendix Z removal, 5x5x20 arithmetic correction,
+α direction in Future Work) are inherited from gen_thesis_27.py edits
+already applied.
+Cover-page marker updated to Sürüm 28.
+Decisions log NOT updated in this round — Decision #49 will be logged
+once Lane A and Lane B are both fully complete."""
 
 import copy, sys, io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -73,7 +78,7 @@ p.add_run("Onur Emiroğlu")
 p = dst.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 p.add_run("Financial Engineering MSc Programı")
 p = dst.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-p.add_run("Nisan 2026 — Sürüm 27")
+p.add_run("Nisan 2026 — Sürüm 28")
 
 # ================================================================
 # 1. OZET — CHANGE B: son paragraf degistirildi, CHANGE C: anahtar kelimeler
@@ -1350,5 +1355,5 @@ add_table(dst, app_h, app_r)
 # ================================================================
 # SAVE
 # ================================================================
-dst.save("manuscript/thesis_27.docx")
-print("thesis_27.docx saved successfully.")
+dst.save("manuscript/thesis_28.docx")
+print("thesis_28.docx saved successfully.")
