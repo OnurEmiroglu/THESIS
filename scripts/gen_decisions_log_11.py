@@ -2,8 +2,10 @@
 
 Appends Decision #47 (WP6 signal informativeness sweep — chapter reframing
 from informativeness-threshold to encoding-interference, Plot 4 not pursued).
-Updates title-page marker to "Sürüm 28" and summary heading from
-"En Kritik 26 Karar" -> "En Kritik 27 Karar".
+Updates summary heading from "En Kritik 26 Karar" -> "En Kritik 27 Karar".
+Title-page version marker is inherited unchanged from log_10 ("Sürüm 27"),
+matching the convention that log_N aligns with the contemporary thesis at
+the time of publication (log_11 was published alongside thesis_27).
 
 Decision #47 uses the same v2 sub-section structure as #46:
   Karar / Seçenekler / Neden / Etki / Not  (no İkilem; trailing Not row)
@@ -161,11 +163,6 @@ def main():
     for para in doc.paragraphs:
         if "ChatGPT ve Claude" in para.text and "26 karar" in para.text:
             _replace_in_paragraph(para, "26 karar", "27 karar")
-
-    # Title-page: Sürüm 27 -> Sürüm 28
-    for para in doc.paragraphs:
-        if "Sürüm 27" in para.text:
-            _replace_in_paragraph(para, "Sürüm 27", "Sürüm 28")
 
     # Summary row #27
     sum_tbl = doc.tables[-1]
