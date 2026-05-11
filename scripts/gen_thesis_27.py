@@ -1280,7 +1280,7 @@ dst.add_paragraph("(3) Paper yayını: iyi nitelendirilmiş null result ile kont
 dst.add_paragraph(
     "(4) Daha agresif sinyal bozulması: WP6 sweep'i kalibrasyon aralığında "
     "(α=0.40 noisy, k=20 lagged, coarsened binning) sigma_hat'in monotonic decay'ini "
-    "göstermedi. Daha agresif bozulmalar (örn. α=0.20, k=50) bu çalışmanın kapsamı "
+    "göstermedi. Daha agresif bozulmalar (örn. α=0.80, k=50) bu çalışmanın kapsamı "
     "dışındadır; kategorik kanalın değer kazandığı bir rejim mevcutsa, bu aralıkta "
     "ortaya çıkabilir.",
     style='List Paragraph'
