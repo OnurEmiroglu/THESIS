@@ -1,9 +1,18 @@
-"""WP4: PPO training via Stable-Baselines3 on MMEnv."""
-# PPO Eğitimi (WP4)
-# -----------------
-# Stable-Baselines3 ile PPO ajanını eğitir.
-# ppo_aware: rejim one-hot gözlemler, ppo_blind: rejim etiketi almaz.
-# Kronolojik train/test bölünmesi (%70/%30) kullanır.
+"""WP4 — PPO Training Infrastructure Pilot.
+
+PILOT/IN-SAMPLE only. This job trains and evaluates a PPO agent on
+the same full synthetic exogenous series with no temporal split. It
+is used for smoke-testing the PPO training stack (Stable-Baselines3
+integration, observation/action shapes, reward stability) and NOT
+for reporting out-of-sample performance.
+
+All thesis numerical claims about PPO performance come from WP5
+(src/wp5/job_w5_eval.py), which implements a 70/30 chronological
+train/test split with n_train=5600 and n_test=2400 over the
+exogenous series.
+
+Do not cite metrics produced by this job as out-of-sample results.
+"""
 
 from __future__ import annotations
 
