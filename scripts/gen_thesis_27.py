@@ -1332,55 +1332,6 @@ app_r = [
 add_table(dst, app_h, app_r)
 
 # ================================================================
-# APPENDIX Z — WIP MARKER (REMOVE BEFORE SUBMISSION)
-# ================================================================
-add_heading(dst, "⚠ WIP — REMOVE BEFORE SUBMISSION — Appendix Z: Work in Progress", level=1)
-
-add_normal(dst, (
-    "⚠ UYARI: Bu bölüm tez teslim edilmeden önce kaldırılmalıdır. Aşağıdaki notlar, "
-    "yazım süreci devam ederken açık kalan aksiyon maddelerini ve sürmekte olan WP5.5 "
-    "çalışmasının durumunu derler."
-))
-
-add_normal(dst, "Açık iş maddeleri ve notlar:")
-
-dst.add_paragraph(
-    "(1) WP5.5 — Manipülasyon Geçerlilik Denetimi: §4.9'da raporlanan audit, kanonik "
-    "operating point altında yeniden koşulmuştur "
-    "(run ID: 20260422-170037_seed123_wp55-signal-audit_66fc17e); direction, separation "
-    "ve coarsen_safety PASS, monotonicity FAIL, genel öneri REVIEW. Monotonicity "
-    "değerlendirme ekseninin yeniden tasarlanması gelecek çalışma listesine alınmıştır.",
-    style='List Paragraph'
-)
-dst.add_paragraph(
-    "(2) Misspec-mild ortam farkı: §4.8'de raporlanan misspec-mild deneyleri "
-    "sigma_mult = [0.5, 1.0, 2.0] / warmup = 400 ile yürütülmüştür; kanonik ortam "
-    "[0.6, 1.0, 1.8] / warmup = 1000. Yeniden üretim gerçekleştirilmedi; §4.8'e "
-    "retrospektif ortam uyarısı paragrafı eklenmiştir (bkz. Decisions Log #42, #45).",
-    style='List Paragraph'
-)
-dst.add_paragraph(
-    "(3) Canonical operating point kaydı: dt = 0.2, sigma_mid_ticks = 0.8, "
-    "sigma_mult = [0.6, 1.0, 1.8], warmup_steps = 1000, rv_window = 50, n_steps = 8000, "
-    "exec = {A=5.0, k=1.5, fee_bps=0.2, latency_steps=1}, 3×3 sticky trans_matrix. "
-    "Yeni ilave deneyler bu referansı kullanmalıdır.",
-    style='List Paragraph'
-)
-dst.add_paragraph(
-    "(4) Teslim öncesi kontrol listesi: (a) bu Appendix Z bölümünü kaldır, "
-    "(b) kapak sayfasındaki 'Sürüm 27' işaretçisini nihai sürüm numarasıyla değiştir, "
-    "(c) WP5.5 audit tablosunda (Tablo 8) değerlerin en güncel audit_summary.md ile "
-    "eşleştiğini doğrula.",
-    style='List Paragraph'
-)
-
-add_normal(dst, (
-    "Bu bölüm bilinçli olarak görünür bir başlıkla işaretlenmiştir; otomatik inceleme "
-    "yapan okuyucuların (Codex denetimi dahil) bölümü yanlışlıkla atlamaması için "
-    "başlık 'REMOVE BEFORE SUBMISSION' ifadesini içerir."
-))
-
-# ================================================================
 # SAVE
 # ================================================================
 dst.save("manuscript/thesis_27.docx")
