@@ -1,0 +1,23 @@
+# Cross-platform line-ending and binary policy.
+# Rationale: Windows + core.autocrlf=true causes disk bytes to differ
+# from tree bytes for text files, breaking raw-sha256 byte-identity
+# checks used in Lane B/A/C audit rules. This file pins CSV and TXT
+# artifacts to LF-on-disk so sha256sum of working-tree matches the
+# tree blob, and marks generated binary outputs explicitly so git
+# never attempts text normalization on them.
+#
+# Scope (C-as-drafted): CSV/TXT only. Source code (.py), notes (.md),
+# and other text types intentionally left under the existing autocrlf
+# default; expanding to those is a separate decision (C-extended)
+# tracked as future work.
+
+# Force LF on disk for analysis artifacts and audit text outputs
+*.csv text eol=lf
+*.txt text eol=lf
+
+# Mark generated binaries explicitly so git never tries to normalize them
+*.png binary
+*.pdf binary
+*.docx binary
+*.pptx binary
+*.xlsx binary
