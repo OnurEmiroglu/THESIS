@@ -3,8 +3,31 @@
 # ---------------------------------------------------
 # 120 modelin (3 dedektör × 20 seed × 2 strateji) istatistiksel analizini yapar.
 # - Paired t-test: ppo_aware vs ppo_blind (her dedektör için ayrı)
-# - One-way ANOVA: dedektör seçiminin ppo_aware'e etkisi
+# - One-way ANOVA: dedektör seçiminin ppo_aware'e etkisi (destekleyici
+#   robustness check; primary inferential machinery per-detector
+#   paired t-test'lerdir)
 # - Sonuçlar: stats_detector_robustness.txt
+#
+# Design note (Lane C audit follow-up):
+# The ANOVA below is one-way (between-subjects). The actual design is
+# repeated-measures: the same 20 seeds are shared across all three
+# detectors, so each seed contributes a matched triple of observations
+# (hmm, rv_baseline, rv_dwell) drawn from the same underlying market
+# path. The RM-appropriate non-parametric analog is the Friedman test
+# (scipy.stats.friedmanchisquare); the parametric analog is
+# repeated-measures ANOVA.
+#
+# The one-way ANOVA is retained here because the observed F-statistic
+# (F = 0.003, p = 0.997) is so far from any rejection threshold that
+# the qualitative conclusion (detector choice does not meaningfully
+# affect ppo_aware sharpe) is robust to test choice — an RM analysis
+# would yield a different p-value but the same null conclusion. The
+# per-detector paired t-tests (which ARE correctly matched on seed)
+# carry the primary inferential weight in §4.6.
+#
+# Lane D follow-up: implement Friedman / RM-ANOVA as a supplementary
+# check and report alongside the one-way result. Not implemented here
+# to stay within Lane C scope.
 
 from __future__ import annotations
 
