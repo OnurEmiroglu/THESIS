@@ -136,6 +136,22 @@ class CSVMetricLogger:
             writer.writerow(row)
 
 
+def _diff_config(saved: Dict[str, Any], current: Dict[str, Any], prefix: str = "") -> list:
+    """Return dotted-path diff lines for keys that differ between saved and current."""
+    diffs = []
+    for k in sorted(set(saved.keys()) | set(current.keys())):
+        path = f"{prefix}.{k}" if prefix else k
+        if k not in saved:
+            diffs.append(f"{path}: <missing> != {current[k]!r}")
+        elif k not in current:
+            diffs.append(f"{path}: {saved[k]!r} != <missing>")
+        elif isinstance(saved[k], dict) and isinstance(current[k], dict):
+            diffs.extend(_diff_config(saved[k], current[k], prefix=path))
+        elif saved[k] != current[k]:
+            diffs.append(f"{path}: {saved[k]!r} != {current[k]!r}")
+    return diffs
+
+
 @dataclass
 class RunContext:
     run_id: str
@@ -153,6 +169,7 @@ def setup_run(
     config_path: str | Path,
     results_root: str | Path = "results/runs",
     resume_run_id: Optional[str] = None,
+    resume_force: bool = False,
 ) -> RunContext:
     config_path = Path(config_path)
     cfg = load_json(config_path)
@@ -171,6 +188,30 @@ def setup_run(
             )
         plots_dir = run_dir / "plots"
         plots_dir.mkdir(parents=True, exist_ok=True)
+
+        # Validate the current config matches the snapshot saved by the
+        # original non-resume run. A mismatched resume can silently produce
+        # orphan-config runs (audit issue B9). Refuse on mismatch unless
+        # the caller explicitly opts in via resume_force=True. A missing
+        # snapshot (legacy runs predating snapshot saving) is permitted.
+        snapshot_path = run_dir / "config_snapshot.json"
+        if snapshot_path.exists():
+            saved = load_json(snapshot_path)
+            saved_cmp = {k: v for k, v in saved.items() if k != "run_id"}
+            current_cmp = {k: v for k, v in cfg.items() if k != "run_id"}
+            diffs = _diff_config(saved_cmp, current_cmp)
+            if diffs:
+                msg = (
+                    f"Resume config mismatch for run_id={resume_run_id}.\n"
+                    f"  Saved snapshot: {snapshot_path.as_posix()}\n"
+                    f"  Current config: {Path(config_path).as_posix()}\n"
+                    f"  Differing keys ({len(diffs)}):\n    - "
+                    + "\n    - ".join(diffs)
+                    + "\n  Pass resume_force=True to override."
+                )
+                if not resume_force:
+                    raise ValueError(msg)
+                print(f"WARNING: {msg}\nProceeding because resume_force=True.")
     else:
         run_id = make_run_id(seed=seed, run_tag=cfg.get("run_tag"))
         run_dir = results_root / run_id
