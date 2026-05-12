@@ -1,4 +1,25 @@
 """Generate thesis_23 extension figures from existing WP5 result files."""
+# Thesis figure script — supplementary thesis figure suite (Fig 6–9).
+# -------------------------------------------------------------------
+# Ownership scope: this script produces and owns the following
+# figures embedded in thesis_28 (sha256-verified):
+#   - fig6_ablation_summary.png     → §4.2 (pure ablation / signal redundancy)
+#   - fig7_oracle_paired_seed.png   → §4.3 (oracle vs PPO_aware paired-seed)
+#   - fig8_eta_regime_summary.png   → §4.7 (regime-conditional eta)
+#   - fig9_misspec_summary.png      → §4.8 (model misspecification)
+# Output directory: results/plots/thesis_23/
+#
+# Filename rationale: the "_23" suffix is preserved for
+# appendix/file-index stability across gen_thesis_{23..28}.py —
+# renaming would invalidate appendix references chained through
+# those generator scripts.
+#
+# Companion script: src/wp5/figure_thesis.py owns the main
+# thesis figure suite (Fig 1–5).
+#
+# Out of scope: Chapter 5 (WP6) figures are produced by the WP6
+# sweep toolchain in docs/internal/wp6_sweep_full/plots/, NOT
+# by this script.
 
 from pathlib import Path
 

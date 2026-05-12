@@ -1,12 +1,25 @@
 """Generate thesis figures from WP5 OOS results."""
-# Tez Figür Üretimi (WP5)
-# -------------------------
-# Tezdeki tüm ana figürleri üretir ve results/plots/thesis/ klasörüne kaydeder:
-# - fig1_sharpe_inv.png: Sharpe ve inv_p99 karşılaştırması
-# - fig2_paired_seed.png: Seed bazında PPO-aware vs PPO-blind scatter
-# - fig3_regime_sharpe.png: Volatilite rejimine göre Sharpe
-# - fig4_detector_robustness.png: Dedektör karşılaştırması
-# - fig5_action_analysis.png: Eylem dağılımı
+# Thesis figure script — main figure suite (Fig 1–5).
+# ---------------------------------------------------
+# Ownership scope: this script produces and owns the following
+# figures embedded in thesis_28 (sha256-verified):
+#   - fig1_sharpe_inv.png           → §4.1
+#   - fig2_paired_seed.png          → §4.1
+#   - fig3_regime_sharpe.png        → §4.5
+#   - fig4_detector_robustness.png  → §4.6
+#   - fig5_action_analysis.png      → §4.4
+# Output directory: results/plots/thesis/
+#
+# Companion script: src/wp5/figure_thesis_23.py owns the
+# supplementary thesis figure suite (Fig 6–9: pure ablation,
+# oracle paired seed, eta-regime, model misspecification). The
+# "_23" suffix in that filename is preserved for appendix/
+# file-index stability across gen_thesis_{23..28}.py — renaming
+# would invalidate the appendix references.
+#
+# Out of scope: Chapter 5 (WP6) figures are produced by the WP6
+# sweep toolchain in docs/internal/wp6_sweep_full/plots/, NOT
+# by this script.
 
 from pathlib import Path
 import re
