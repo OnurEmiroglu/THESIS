@@ -92,18 +92,44 @@ def build_logger(run_dir: Path, level: str = "INFO") -> logging.Logger:
 
 
 class CSVMetricLogger:
-    def __init__(self, path: Path):
+    """Append-only CSV metric writer with schema enforcement.
+
+    The schema (fieldnames) may be declared at construction time. If not,
+    it is inferred from the first log() call and frozen thereafter. Every
+    subsequent log() call must use the same set of keys, otherwise a
+    ValueError is raised — silent column-mismatch corruption is never
+    written to disk.
+    """
+
+    def __init__(self, path: Path, fieldnames: Optional[list] = None):
         self.path = path
         self._header_written = False
+        self._fieldnames: Optional[list] = (
+            list(fieldnames) if fieldnames is not None else None
+        )
 
     def log(self, row: Dict[str, Any]) -> None:
         import csv
+
+        if self._fieldnames is None:
+            self._fieldnames = list(row.keys())
+        else:
+            row_keys = set(row.keys())
+            schema_keys = set(self._fieldnames)
+            if row_keys != schema_keys:
+                missing = sorted(schema_keys - row_keys)
+                extra = sorted(row_keys - schema_keys)
+                raise ValueError(
+                    f"CSVMetricLogger schema mismatch for {self.path.name}: "
+                    f"expected {sorted(schema_keys)}, got {sorted(row_keys)}; "
+                    f"missing={missing} extra={extra}"
+                )
 
         self.path.parent.mkdir(parents=True, exist_ok=True)
         write_header = (not self._header_written) and (not self.path.exists())
 
         with self.path.open("a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(row.keys()))
+            writer = csv.DictWriter(f, fieldnames=self._fieldnames)
             if write_header:
                 writer.writeheader()
                 self._header_written = True
