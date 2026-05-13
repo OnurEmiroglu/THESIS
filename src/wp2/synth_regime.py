@@ -256,7 +256,11 @@ def assign_regime_hat_hmm(
 
 
 # WP2 ana iş akışı: rejim üretimi → mid-price → RV hesaplama → eşik kalibrasyonu → tespit.
-# Sonuçları data/processed/wp2_synth.csv'ye yazar.
+# Active downstream pipelines consume the returned dataframe, not the disk CSVs.
+# Disk outputs are artifacts:
+#   - data/processed/wp2_synth.csv is the latest convenience snapshot / backward-compatible alias.
+#   - ctx.run_dir/wp2_synth.csv is the provenance artifact for a specific run.
+#   - ctx.run_dir/wp2_synth_snapshot.csv is kept as the legacy per-run alias.
 def run_wp2(
     cfg: dict,
     seed: int,
@@ -304,7 +308,8 @@ def run_wp2(
     df.to_csv(out_dir / "wp2_synth.csv", index=False)
 
     if ctx is not None and hasattr(ctx, "run_dir"):
-        snapshot_path = Path(ctx.run_dir) / "wp2_synth_snapshot.csv"
-        df.to_csv(snapshot_path, index=False)
+        run_dir = Path(ctx.run_dir)
+        df.to_csv(run_dir / "wp2_synth.csv", index=False)
+        df.to_csv(run_dir / "wp2_synth_snapshot.csv", index=False)
 
     return df, thresh_LM, thresh_MH
