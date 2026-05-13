@@ -21,6 +21,7 @@
 # sweep toolchain in docs/internal/wp6_sweep_full/plots/, NOT
 # by this script.
 
+import argparse
 from pathlib import Path
 
 import matplotlib
@@ -33,19 +34,24 @@ import pandas as pd
 from scipy import stats
 
 
-ABLATION_CSV = Path(
+DEFAULT_ABLATION_CSV = (
     "results/runs/20260327-171914_seed1_wp5-ablation_e1545a5"
     "/metrics_wp5_oos_combined.csv"
 )
-ETA_CSV = Path(
+DEFAULT_ETA_CSV = (
     "results/runs/20260330-155235_seed42_w5-eta-regime_af82a9f"
     "/metrics_wp5_oos.csv"
 )
-MISSPEC_CSV = Path(
+DEFAULT_MISSPEC_CSV = (
     "results/runs/20260408-160248_seed1_w5-misspec-mild_5d9dc23"
     "/metrics_wp5_oos.csv"
 )
-OUT_DIR = Path("results/plots/thesis_23")
+DEFAULT_OUT_DIR = "results/plots/thesis_23"
+
+ABLATION_CSV = Path(DEFAULT_ABLATION_CSV)
+ETA_CSV = Path(DEFAULT_ETA_CSV)
+MISSPEC_CSV = Path(DEFAULT_MISSPEC_CSV)
+OUT_DIR = Path(DEFAULT_OUT_DIR)
 
 VARIANT_ORDER = [
     "ppo_sigma_only",
@@ -74,6 +80,44 @@ plt.rcParams.update({
     "figure.dpi": 150,
     "figure.autolayout": True,
 })
+
+
+def _parse_args(argv=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--ablation-csv",
+        type=Path,
+        default=DEFAULT_ABLATION_CSV,
+        help="WP5 ablation combined OOS metrics CSV.",
+    )
+    parser.add_argument(
+        "--eta-csv",
+        type=Path,
+        default=DEFAULT_ETA_CSV,
+        help="WP5 eta-regime OOS metrics CSV.",
+    )
+    parser.add_argument(
+        "--misspec-csv",
+        type=Path,
+        default=DEFAULT_MISSPEC_CSV,
+        help="WP5 mild misspecification OOS metrics CSV.",
+    )
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=DEFAULT_OUT_DIR,
+        help="Directory for generated thesis_23 extension figures.",
+    )
+    return parser.parse_args(argv)
+
+
+def _configure_paths(args: argparse.Namespace) -> None:
+    global ABLATION_CSV, ETA_CSV, MISSPEC_CSV, OUT_DIR
+
+    ABLATION_CSV = Path(args.ablation_csv)
+    ETA_CSV = Path(args.eta_csv)
+    MISSPEC_CSV = Path(args.misspec_csv)
+    OUT_DIR = Path(args.out_dir)
 
 
 def _load_test(path: Path) -> pd.DataFrame:
@@ -198,7 +242,10 @@ def fig9_misspec_summary(misspec: pd.DataFrame):
     print(f"  saved {out}")
 
 
-def main():
+def main(argv=None):
+    args = _parse_args(argv)
+    _configure_paths(args)
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     ablation = _load_test(ABLATION_CSV)
     eta = _load_test(ETA_CSV)

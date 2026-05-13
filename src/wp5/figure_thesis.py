@@ -21,6 +21,7 @@
 # sweep toolchain in docs/internal/wp6_sweep_full/plots/, NOT
 # by this script.
 
+import argparse
 from pathlib import Path
 import re
 import numpy as np
@@ -32,15 +33,19 @@ import matplotlib.pyplot as plt
 
 # ── paths ────────────────────────────────────────────────────────────────
 
-MAIN_RUN = Path("results/runs/20260228-093733_seed1_wp5-eval-main_3e8eacc")
-DETECTOR_CSV = Path(
+DEFAULT_MAIN_RUN = "results/runs/20260228-093733_seed1_wp5-eval-main_3e8eacc"
+DEFAULT_DETECTOR_CSV = (
     "results/runs/20260316-223842_seed1_wp5-detector-full_a67e381"
     "/metrics_detector_pilot.csv"
 )
+DEFAULT_OUT_DIR = "results/plots/thesis"
+
+MAIN_RUN = Path(DEFAULT_MAIN_RUN)
+DETECTOR_CSV = Path(DEFAULT_DETECTOR_CSV)
 OOS_CSV = MAIN_RUN / "metrics_wp5_oos.csv"
 REGIME_CSV = MAIN_RUN / "metrics_wp5_oos_by_regime.csv"
 CURVES_DIR = MAIN_RUN / "curves"
-OUT_DIR = Path("results/plots/thesis")
+OUT_DIR = Path(DEFAULT_OUT_DIR)
 
 # ── style ────────────────────────────────────────────────────────────────
 
@@ -59,6 +64,40 @@ plt.rcParams.update({
     "figure.dpi": 150,
     "figure.autolayout": True,
 })
+
+
+def _parse_args(argv=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--main-run",
+        type=Path,
+        default=DEFAULT_MAIN_RUN,
+        help="WP5 main evaluation run directory.",
+    )
+    parser.add_argument(
+        "--detector-csv",
+        type=Path,
+        default=DEFAULT_DETECTOR_CSV,
+        help="Detector robustness metrics CSV.",
+    )
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=DEFAULT_OUT_DIR,
+        help="Directory for generated thesis figures.",
+    )
+    return parser.parse_args(argv)
+
+
+def _configure_paths(args: argparse.Namespace) -> None:
+    global MAIN_RUN, DETECTOR_CSV, OOS_CSV, REGIME_CSV, CURVES_DIR, OUT_DIR
+
+    MAIN_RUN = Path(args.main_run)
+    DETECTOR_CSV = Path(args.detector_csv)
+    OOS_CSV = MAIN_RUN / "metrics_wp5_oos.csv"
+    REGIME_CSV = MAIN_RUN / "metrics_wp5_oos_by_regime.csv"
+    CURVES_DIR = MAIN_RUN / "curves"
+    OUT_DIR = Path(args.out_dir)
 
 
 # ── helpers ──────────────────────────────────────────────────────────────
@@ -283,7 +322,10 @@ def fig5_action_analysis(curves: pd.DataFrame):
 
 # ── main ─────────────────────────────────────────────────────────────────
 
-def main():
+def main(argv=None):
+    args = _parse_args(argv)
+    _configure_paths(args)
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     oos = pd.read_csv(OOS_CSV)

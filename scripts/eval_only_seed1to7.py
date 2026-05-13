@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import copy
 import json
 import math
@@ -22,9 +23,13 @@ from src.wp2.synth_regime import run_wp2
 from src.wp3.env import MMEnv
 
 # ---------- Dizinler ----------
-MODEL_RUN = ROOT / "results" / "runs" / "20260327-030624_seed1_wp5-ablation_e1545a5"
-OUTPUT_RUN = ROOT / "results" / "runs" / "20260327-171914_seed1_wp5-ablation_e1545a5"
-CFG_PATH = ROOT / "config" / "w5_main.json"
+DEFAULT_MODEL_RUN = "results/runs/20260327-030624_seed1_wp5-ablation_e1545a5"
+DEFAULT_OUTPUT_RUN = "results/runs/20260327-171914_seed1_wp5-ablation_e1545a5"
+DEFAULT_CFG_PATH = "config/w5_main.json"
+
+MODEL_RUN = ROOT / DEFAULT_MODEL_RUN
+OUTPUT_RUN = ROOT / DEFAULT_OUTPUT_RUN
+CFG_PATH = ROOT / DEFAULT_CFG_PATH
 
 SEEDS = list(range(1, 8))  # seed 1-7
 
@@ -35,6 +40,31 @@ VARIANTS = {
     "oracle_pure": {"use_sigma": False, "regime_source": "true"},
     "oracle_full": {"use_sigma": True,  "regime_source": "true"},
 }
+
+
+def _root_relative_path(path_value) -> Path:
+    path = Path(path_value)
+    return path if path.is_absolute() else ROOT / path
+
+
+def _parse_args(argv=None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--model-run",
+        default=DEFAULT_MODEL_RUN,
+        help="Run directory containing the seed 1-7 trained models.",
+    )
+    parser.add_argument(
+        "--output-run",
+        default=DEFAULT_OUTPUT_RUN,
+        help="Run directory containing/writing the seed 1-7 and combined metrics.",
+    )
+    parser.add_argument(
+        "--cfg-path",
+        default=DEFAULT_CFG_PATH,
+        help="WP5 config path, relative to repo root unless absolute.",
+    )
+    return parser.parse_args(argv)
 
 
 def _compute_regime_metrics(equity, inv, fills, fees, regime_labels, dt):
@@ -63,8 +93,13 @@ def _compute_regime_metrics(equity, inv, fills, fees, regime_labels, dt):
     return results
 
 
-def main():
-    with open(CFG_PATH) as f:
+def main(argv=None):
+    args = _parse_args(argv)
+    model_run = _root_relative_path(args.model_run)
+    output_run = _root_relative_path(args.output_run)
+    cfg_path = _root_relative_path(args.cfg_path)
+
+    with open(cfg_path) as f:
         cfg = json.load(f)
 
     # Override seeds to [1..20] for correct exog generation params
@@ -95,7 +130,7 @@ def main():
         # 3) Load pre-trained models
         models = {}
         for name in VARIANTS:
-            model_path = MODEL_RUN / "models" / f"seed{seed}" / f"ppo_{name}"
+            model_path = model_run / "models" / f"seed{seed}" / f"ppo_{name}"
             models[name] = PPO.load(str(model_path), device="cpu")
             print(f"  Loaded {model_path.name}")
 
@@ -179,16 +214,16 @@ def main():
     df_oos = pd.DataFrame(rows_oos)
     df_regime = pd.DataFrame(rows_regime)
 
-    oos_path = OUTPUT_RUN / "metrics_wp5_oos_seed1to7.csv"
-    regime_path = OUTPUT_RUN / "metrics_wp5_oos_by_regime_seed1to7.csv"
+    oos_path = output_run / "metrics_wp5_oos_seed1to7.csv"
+    regime_path = output_run / "metrics_wp5_oos_by_regime_seed1to7.csv"
     df_oos.to_csv(oos_path, index=False)
     df_regime.to_csv(regime_path, index=False)
     print(f"\nSaved: {oos_path}  ({len(df_oos)} rows)")
     print(f"Saved: {regime_path}  ({len(df_regime)} rows)")
 
     # 7) Merge with seed 8-20
-    df_oos_8to20 = pd.read_csv(OUTPUT_RUN / "metrics_wp5_oos.csv")
-    df_regime_8to20 = pd.read_csv(OUTPUT_RUN / "metrics_wp5_oos_by_regime.csv")
+    df_oos_8to20 = pd.read_csv(output_run / "metrics_wp5_oos.csv")
+    df_regime_8to20 = pd.read_csv(output_run / "metrics_wp5_oos_by_regime.csv")
 
     df_combined = pd.concat([df_oos, df_oos_8to20], ignore_index=True).sort_values(
         ["seed", "strategy"]
@@ -198,8 +233,8 @@ def main():
         ["seed", "strategy", "regime"]
     ).reset_index(drop=True)
 
-    combined_path = OUTPUT_RUN / "metrics_wp5_oos_combined.csv"
-    regime_combined_path = OUTPUT_RUN / "metrics_wp5_oos_by_regime_combined.csv"
+    combined_path = output_run / "metrics_wp5_oos_combined.csv"
+    regime_combined_path = output_run / "metrics_wp5_oos_by_regime_combined.csv"
     df_combined.to_csv(combined_path, index=False)
     df_regime_combined.to_csv(regime_combined_path, index=False)
 
