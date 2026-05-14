@@ -16,6 +16,17 @@ equivalence we require BOTH one-sided tests to reject, hence
   tost_p = max(p_lower, p_upper)
 and we reject H0 of non-equivalence iff tost_p < alpha.
 """
+
+# ==========================================================
+# WARNING — DEFENSE-CRITICAL PROVENANCE
+# This script writes a Lane C protected summary CSV:
+#   docs/internal/wp6_sweep_full/summary_paired_combined_vs_regime.csv
+# Running this script overwrites a hash-frozen audit artifact
+# and breaks the protected SHA256 4/4 MATCH invariant.
+# DO NOT RUN BEFORE THESIS DEFENSE without explicit approval
+# and a fresh SHA reverification plan.
+# ==========================================================
+
 from __future__ import annotations
 
 from pathlib import Path

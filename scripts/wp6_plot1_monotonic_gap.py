@@ -10,6 +10,17 @@ By design:
   - sigma_only is structurally undefined in the 'none' condition (NaN, not plotted).
   - 'combined' in 'none' collapses to regime_only (use_sigma=False, regime_source=hat).
 """
+
+# ==========================================================
+# WARNING — DEFENSE-CRITICAL PROVENANCE
+# This script writes a Lane C protected summary CSV:
+#   docs/internal/wp6_sweep_full/summary_condition_variant.csv
+# Running this script overwrites a hash-frozen audit artifact
+# and breaks the protected SHA256 4/4 MATCH invariant.
+# DO NOT RUN BEFORE THESIS DEFENSE without explicit approval
+# and a fresh SHA reverification plan.
+# ==========================================================
+
 from __future__ import annotations
 
 from pathlib import Path

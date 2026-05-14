@@ -15,6 +15,17 @@ Per panel:
     reject H0 iff min(p_lower, p_upper) < 0.05. This is the OPPOSITE of WP5's
     TOST usage (where we proved equivalence aware ~ blind).
 """
+
+# ==========================================================
+# WARNING — DEFENSE-CRITICAL PROVENANCE
+# This script writes a Lane C protected summary CSV:
+#   docs/internal/wp6_sweep_full/summary_paired_combined_vs_sigma.csv
+# Running this script overwrites a hash-frozen audit artifact
+# and breaks the protected SHA256 4/4 MATCH invariant.
+# DO NOT RUN BEFORE THESIS DEFENSE without explicit approval
+# and a fresh SHA reverification plan.
+# ==========================================================
+
 from __future__ import annotations
 
 from pathlib import Path
