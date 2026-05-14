@@ -65,7 +65,25 @@
       "Bash(tasklist //FI \"IMAGENAME eq python.exe\" //FO CSV)",
       "Bash(where soffice.exe)",
       "Bash(where libreoffice *)",
-      "Bash(where pandoc *)"
+      "Bash(where pandoc *)",
+      "Bash(git mv *)",
+      "Bash(git reset *)",
+      "Bash(git *)",
+      "PowerShell(python -c \"from docx2pdf import convert; convert\\('manuscript/thesis_27.docx', 'manuscript/thesis_27.pdf'\\); print\\('PDF conversion done'\\)\")",
+      "PowerShell(python -c \"from docx2pdf import convert; import os; src=os.path.abspath\\('manuscript/thesis_27.docx'\\); dst=os.path.abspath\\('manuscript/thesis_27.pdf'\\); print\\('SRC:', src\\); print\\('DST:', dst\\); convert\\(src, dst\\); print\\('exists:', os.path.exists\\(dst\\)\\)\")",
+      "PowerShell(python -c \"from docx2pdf import convert; import os; src=os.path.abspath\\('manuscript/thesis_27.docx'\\); dst=os.path.abspath\\('manuscript/thesis_27.pdf'\\); convert\\(src, dst\\); print\\('exists:', os.path.exists\\(dst\\)\\)\")",
+      "Bash(awk -F/ '{print $1}')",
+      "Bash(awk '{print $1, $2, $4}')",
+      "Bash(awk '{print $1, $2}')",
+      "Bash(awk '$2==\"i/lf\" && $1==\"w/crlf\"')",
+      "Bash(awk '$2==\"i/lf\" && $1==\"w/crlf\" {print $4}')",
+      "Bash(awk '$2==\"i/lf\" && $1==\"w/crlf\" && \\($4 ~ /\\\\.csv$/ || $4 ~ /\\\\.txt$/\\) {print $4}')",
+      "Bash(awk '$1==\"w/mixed\" {print $4}')",
+      "Bash(awk '$1==\"i/lf\" && $2==\"w/crlf\"')",
+      "Bash(awk '$1==\"i/lf\" && $2==\"w/crlf\" {print $4}')",
+      "Bash(awk '$1==\"i/lf\" && $2==\"w/crlf\" && \\($4 ~ /\\\\.csv$/ || $4 ~ /\\\\.txt$/\\) {print $4}')",
+      "Bash(awk '$2==\"w/mixed\" {print $4}')",
+      "Bash(echo \"=== C. last bytes of metrics_detector_compare.csv \\(should end \\\\\\\\n, not \\\\\\\\r\\\\\\\\n\\) ===\")"
     ]
   }
 }
