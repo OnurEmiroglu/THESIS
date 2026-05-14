@@ -1,0 +1,2 @@
+target,comparison,delta_oos_r2,delta_mae,delta_rmse,delta_aic_train,delta_bic_train,nested_f_stat,nested_f_pvalue,nested_f_df_diff,coef_sigma_hat_model_B,p_sigma_hat_model_B,coef_regime_M,p_regime_M,coef_regime_H,p_regime_H
+future_abs_return_ticks,B_minus_A,0.00015881597858113938,0.00010280669611834048,-3.1276514031230995e-05,-11.942523897683714,5.729566616064403,7.971884884941386,0.0003454597092134603,2.0,0.7187283166495843,0.0,0.015286687401972778,0.00013185414628750602,0.005279931676608915,0.28035834194644604

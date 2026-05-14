@@ -4,8 +4,16 @@ KIT Financial Engineering MSc Thesis
 
 ## Research Question
 Does a regime-aware PPO market-making agent outperform a regime-blind PPO agent?
-Current finding: null result — TOST equivalence confirmed (±0.10 bound, p=0.00067, 90% CI [−0.001, +0.063], 95% CI [−0.008, +0.069]). Null result holds across all detectors (ANOVA p=0.997), reward shaping (p=0.0016 favoring sigma_only), and model misspecification (TOST ±0.05, p=0.042, 90% CI [−0.040, +0.048]).
-Current manuscript: `manuscript/thesis_25.pdf`; decision log: `manuscript/decisions_log_8.pdf`.
+Final finding: signal redundancy. In the tested synthetic HFMM setting, PPO learns strong risk-adjusted quoting, but explicit regime labels do not robustly improve performance beyond the continuous `sigma_hat` signal already available to the policy. TOST equivalence is confirmed (±0.10 bound, p=0.00067, 90% CI [−0.001, +0.063], 95% CI [−0.008, +0.069]). The result holds across detector robustness checks (ANOVA p=0.997), reward shaping (p=0.0016 favoring sigma_only), and model misspecification (TOST ±0.05, p=0.042, 90% CI [−0.040, +0.048]).
+
+These are controlled synthetic-market claims, not live-market deployment claims.
+
+Current manuscript: `manuscript/thesis_28.pdf`; decision log: `manuscript/decisions_log_12.pdf`.
+
+Current orientation files:
+- `docs/internal/project_full_notes_13may.md` — consolidated project brain for final thesis context.
+- `EVIDENCE_MANIFEST.md` — canonical audit-remediation evidence manifest.
+- `docs/internal/doc_consistency_audit.md` — documentation freshness audit.
 
 ## Structure
 - `src/` — all Python source code
@@ -14,6 +22,8 @@ Current manuscript: `manuscript/thesis_25.pdf`; decision log: `manuscript/decisi
   - `wp3/` — Gymnasium environment (env.py)
   - `wp4/` — PPO training (job_w4_ppo.py)
   - `wp5/` — OOS evaluation, ablations, detector comparison
+  - `wp5_5/` — signal degradation audit/calibration/runtime checks
+  - `wp6/` — signal informativeness sweep
 - `config/` — JSON config files for all experiments
 - `results/runs/` — experiment outputs (git ignored)
 - `data/processed/` — intermediate data (git ignored)
@@ -30,6 +40,8 @@ Three detector variants implemented and compared:
 - `rv_baseline`: rolling realized volatility, 60.7% accuracy
 - `rv_dwell`: RV + dwell filter, 60.4% accuracy
 - `hmm`: GaussianHMM on sigma_hat, 81.8% accuracy
+
+Main WP4/WP5/WP6 pipelines use causal rv_baseline. rv_dwell is retained only as an auxiliary/offline robustness comparison. HMM is used as an additional robustness detector.
 
 ## Running Experiments
 ```bash
@@ -52,6 +64,11 @@ python -m src.wp2.compare_detectors
 - Regime-conditional eta run: `ppo_sigma_only` beats `ppo_combined` on Sharpe (p=0.0016), so etaH=5×etaL did not make explicit regime labels useful.
 - Mild model-misspecification run: `ppo_sigma_only` and `ppo_oracle_full` remain statistically indistinguishable on Sharpe (p=0.881).
 - Detector robustness full run (3 detectors × 20 seeds × 120 models): COMPLETE. rv_baseline p=0.114, rv_dwell p=0.110, HMM p=0.082. Null result confirmed across all detectors.
+- WP6 signal informativeness sweep: COMPLETE. The original informativeness-threshold hypothesis was not supported; adding categorical regime labels did not reveal a robust improvement over `sigma_hat` in the tested calibration band.
+
+## Audit Status
+
+Lane A/B/C audit-remediation is complete through commit `045ee86`. No experiment reruns were performed during remediation, no numerical claim drift was introduced, and the protected evidence artifacts remained 4/4 SHA256 MATCH. `EVIDENCE_MANIFEST.md` is the canonical audit manifest.
 
 ## Reproducibility
 Every run produces a timestamped directory under results/runs/ containing:
