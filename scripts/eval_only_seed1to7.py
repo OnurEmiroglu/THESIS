@@ -1,3 +1,4 @@
+# WARNING: This script may overwrite frozen thesis/evidence outputs. Do not run before defense unless a new approved version is being created.
 """Eval-only script: seed 1-7 modellerini crash run'dan yükleyip OOS eval çalıştırır."""
 
 from __future__ import annotations

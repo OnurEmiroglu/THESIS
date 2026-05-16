@@ -1,3 +1,4 @@
+# WARNING: This script may overwrite frozen thesis/evidence outputs. Do not run before defense unless a new approved version is being created.
 """Generate thesis figures from WP5 OOS results."""
 # Thesis figure script — main figure suite (Fig 1–5).
 # ---------------------------------------------------

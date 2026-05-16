@@ -1,3 +1,4 @@
+# WARNING: This script may overwrite frozen thesis/evidence outputs. Do not run before defense unless a new approved version is being created.
 """Generate thesis_23 extension figures from existing WP5 result files."""
 # Thesis figure script — supplementary thesis figure suite (Fig 6–9).
 # -------------------------------------------------------------------
