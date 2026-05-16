@@ -1,5 +1,7 @@
 # Project Full Notes - 13 May 2026
 
+Historical note: this document was prepared for thesis_28/decisions_log_12. The current manuscript is thesis_29 and current decision log is decisions_log_13. Most evidence mappings remain valid unless superseded by post-hoc diagnostics.
+
 Purpose: one high-density project brain for ChatGPT project upload context under a 25-file limit. This file consolidates the final thesis position, canonical numerical evidence, statistical conclusions, pipeline design, audit-remediation state, and upload priorities.
 
 Source precedence:

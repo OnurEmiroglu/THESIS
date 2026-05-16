@@ -22,6 +22,19 @@ All Lane C remediation commits preserved the canonical protected set with a
 4/4 SHA256 MATCH. These files are the protected CSV evidence base for the audit
 sequence and were not modified by the remediation work.
 
+## Thesis 29 Addendum
+
+Current manuscript artifact: `manuscript/thesis_29.pdf`.
+Current decision-log artifact: `manuscript/decisions_log_13.pdf`.
+Post-hoc diagnostic package: `docs/internal/posthoc_signal_analysis/`.
+
+This addendum does not alter the protected hash entries above or the existing
+provenance chain below. The protected CSV hashes remained MATCH. The post-hoc
+signal-analysis outputs are supporting interpretive diagnostics only, not
+protected primary experiment evidence unless explicitly frozen later. Primary
+evidence remains the canonical WP5/WP6 experiment outputs and protected
+summaries.
+
 ## Remediation Timeline
 
 - `26beecd` - Lane B: enforce schema consistency in `CSVMetricLogger` with explicit fieldnames at initialization.

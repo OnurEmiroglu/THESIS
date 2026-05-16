@@ -55,3 +55,6 @@ results/runs/*
 # ---- Word/Office temp files ----
 ~$*
 ~WRL*.tmp
+
+# ---- Claude Code harness runtime lockfiles ----
+.claude/*.lock

@@ -1,5 +1,7 @@
 # Defense Risk Register
 
+Historical note: this document was prepared for thesis_28/decisions_log_12. The current manuscript is thesis_29 and current decision log is decisions_log_13. Most evidence mappings remain valid unless superseded by post-hoc diagnostics.
+
 Purpose: anticipate advisor/committee attack points and prepare defense-safe answers without strengthening claims beyond `thesis_28`.
 
 | Risk / attack point | Why it could be questioned | Current mitigation | Remaining weakness | Suggested defense wording |

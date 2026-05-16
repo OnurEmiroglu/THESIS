@@ -7,8 +7,9 @@ Does a regime-aware PPO market-making agent outperform a regime-blind PPO agent?
 Final finding: signal redundancy. In the tested synthetic HFMM setting, PPO learns strong risk-adjusted quoting, but explicit regime labels do not robustly improve performance beyond the continuous `sigma_hat` signal already available to the policy. TOST equivalence is confirmed (±0.10 bound, p=0.00067, 90% CI [−0.001, +0.063], 95% CI [−0.008, +0.069]). The result holds across detector robustness checks (ANOVA p=0.997), reward shaping (p=0.0016 favoring sigma_only), and model misspecification (TOST ±0.05, p=0.042, 90% CI [−0.040, +0.048]).
 
 These are controlled synthetic-market claims, not live-market deployment claims.
+Post-hoc signal redundancy diagnostics are retained as supporting interpretive diagnostics only: they help explain why the frozen WP5/WP6 evidence is consistent with signal redundancy, but they are not mechanistic proof and they do not replace the primary experiment evidence.
 
-Current manuscript: `manuscript/thesis_28.pdf`; decision log: `manuscript/decisions_log_12.pdf`.
+Current manuscript: `manuscript/thesis_29.pdf`; decision log: `manuscript/decisions_log_13.pdf`.
 
 Current orientation files:
 - `docs/internal/project_full_notes_13may.md` — consolidated project brain for final thesis context.
@@ -69,6 +70,8 @@ python -m src.wp2.compare_detectors
 ## Audit Status
 
 Lane A/B/C audit-remediation is complete through commit `045ee86`. No experiment reruns were performed during remediation, no numerical claim drift was introduced, and the protected evidence artifacts remained 4/4 SHA256 MATCH. `EVIDENCE_MANIFEST.md` is the canonical audit manifest.
+
+Primary evidence remains the canonical WP5/WP6 experiment outputs and protected summaries. Post-hoc diagnostics, including `docs/internal/posthoc_signal_analysis/`, are supporting interpretive diagnostics only. Protected evidence remains hash-verified.
 
 ## Reproducibility
 Every run produces a timestamped directory under results/runs/ containing:

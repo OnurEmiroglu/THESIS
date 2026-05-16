@@ -1,5 +1,7 @@
 # Defense Claim Traceability Matrix
 
+Historical note: this document was prepared for thesis_28/decisions_log_12. The current manuscript is thesis_29 and current decision log is decisions_log_13. Most evidence mappings remain valid unless superseded by post-hoc diagnostics.
+
 Purpose: map each major `thesis_28` claim to exact evidence sources, generation code, configs, and reproducibility status. This is a defense-readiness artifact only. It does not rerun experiments or alter scientific outputs.
 
 Canonical references:

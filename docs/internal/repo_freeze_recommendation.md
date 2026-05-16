@@ -1,5 +1,7 @@
 # Repository Freeze Recommendation
 
+Historical note: this document was prepared for thesis_28/decisions_log_12. The current manuscript is thesis_29 and current decision log is decisions_log_13. Most evidence mappings remain valid unless superseded by post-hoc diagnostics.
+
 Purpose: define what should be frozen for defense, what may safely change, and what must not be regenerated. This file also records the final repo sanity scan requested for the defense-readiness audit.
 
 ## Freeze Recommendation

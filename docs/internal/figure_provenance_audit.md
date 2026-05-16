@@ -1,5 +1,7 @@
 # Figure Provenance Audit
 
+Historical note: this document was prepared for thesis_28/decisions_log_12. The current manuscript is thesis_29 and current decision log is decisions_log_13. Most evidence mappings remain valid unless superseded by post-hoc diagnostics.
+
 Purpose: trace every major figure embedded in `manuscript/thesis_28.pdf` to its generating script, source data, run IDs, and regeneration status. This is a documentation-only audit; figures were not regenerated.
 
 Primary thesis insertion map: `scripts/gen_thesis_28.py`.
