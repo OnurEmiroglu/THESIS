@@ -3,7 +3,7 @@
 # Thesis figure script — supplementary thesis figure suite (Fig 6–9).
 # -------------------------------------------------------------------
 # Ownership scope: this script produces and owns the following
-# figures embedded in thesis_28 (sha256-verified):
+# figures embedded in thesis_29 (sha256-verified):
 #   - fig6_ablation_summary.png     → §4.2 (pure ablation / signal redundancy)
 #   - fig7_oracle_paired_seed.png   → §4.3 (oracle vs PPO_aware paired-seed)
 #   - fig8_eta_regime_summary.png   → §4.7 (regime-conditional eta)

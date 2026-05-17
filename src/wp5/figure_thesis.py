@@ -3,7 +3,7 @@
 # Thesis figure script — main figure suite (Fig 1–5).
 # ---------------------------------------------------
 # Ownership scope: this script produces and owns the following
-# figures embedded in thesis_28 (sha256-verified):
+# figures embedded in thesis_29 (sha256-verified):
 #   - fig1_sharpe_inv.png           → §4.1
 #   - fig2_paired_seed.png          → §4.1
 #   - fig3_regime_sharpe.png        → §4.5

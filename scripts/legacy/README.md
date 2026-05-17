@@ -5,8 +5,8 @@ produced the named output at the time of its last commit. Kept
 for provenance; not invoked by any current build pipeline.
 
 Active (current) generators live one directory up:
-- `scripts/gen_thesis_28.py`        - produces `manuscript/thesis_28.docx`
-- `scripts/gen_decisions_log_11.py` - produces `manuscript/decisions_log_11.docx`
+- `scripts/gen_thesis_29.py`        - produces `manuscript/thesis_29.docx`
+- `scripts/gen_decisions_log_13.py` - produces `manuscript/decisions_log_13.docx`
 
 ## Thesis generators (python-docx chain)
 
@@ -25,6 +25,7 @@ Active (current) generators live one directory up:
 | gen_thesis_25.py    | thesis_25.docx      | Apr 17                                                         |
 | gen_thesis_26.py    | thesis_26.docx      | Apr 23                                                         |
 | gen_thesis_27.py    | thesis_27.docx      | May 12                                                         |
+| gen_thesis_28.py    | thesis_28.docx      | May 12                                                         |
 
 ## Alternate-format draft generator (Node.js)
 
@@ -45,12 +46,15 @@ Active (current) generators live one directory up:
 | gen_decisions_log_8.py     | decisions_log_8.docx   |                                                    |
 | gen_decisions_log_9.py     | decisions_log_9.docx   |                                                    |
 | gen_decisions_log_10.py    | decisions_log_10.docx  |                                                    |
+| gen_decisions_log_11.py    | decisions_log_11.docx  |                                                    |
+| gen_decisions_log_12.py    | decisions_log_12.docx  |                                                    |
 
 ## Note on appendix file-list paths
 
-`scripts/gen_thesis_28.py` (active) contains an appendix file-list
-that still references the pre-move paths `scripts/gen_thesis_docx.py`
-and `scripts/gen_thesis_draft.js`. These are documentation metadata,
-not operational dependencies; thesis_28.docx is a frozen defense
-artifact. The paths will be updated at the next thesis bump
-(`gen_thesis_29.py`).
+The legacy generator `scripts/legacy/gen_thesis_28.py` contains an
+appendix file-list that references the pre-move paths
+`scripts/gen_thesis_docx.py` and `scripts/gen_thesis_draft.js`. Those
+were documentation metadata embedded in the frozen historical artifact
+`thesis_28.docx`, not operational dependencies. The active generator
+`scripts/gen_thesis_29.py` is the current source of truth for appendix
+file-list paths.
