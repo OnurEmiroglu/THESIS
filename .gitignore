@@ -65,3 +65,8 @@ HFMM_REALDATA/data/processed/*
 !HFMM_REALDATA/data/raw/.gitkeep
 !HFMM_REALDATA/data/processed/.gitkeep
 !HFMM_REALDATA/data/raw/_manifest.json
+# Step 5 evidence artifacts (per-file exceptions; tracked as methodology evidence)
+!HFMM_REALDATA/data/processed/step5_inspection_report.txt
+!HFMM_REALDATA/data/processed/spread_hist_20240301.png
+!HFMM_REALDATA/data/processed/spread_hist_20240601.png
+!HFMM_REALDATA/data/processed/spread_hist_20240901.png

@@ -1,0 +1,216 @@
+Step 5 sample inspection report
+Generated  : 2026-05-18T22:08:31.889080+00:00
+Manifest   : C:\Users\onure\Desktop\THESIS\HFMM_REALDATA\data\raw\_manifest.json
+Dates      : 2024-03-01, 2024-06-01, 2024-09-01
+Raw dir    : C:\Users\onure\Desktop\THESIS\HFMM_REALDATA\data\raw
+Proc dir   : C:\Users\onure\Desktop\THESIS\HFMM_REALDATA\data\processed
+
+======================================================================
+DATE: 2024-03-01
+======================================================================
+
+--- (a) L2 file inspection [2024-03-01] ---
+  file       : binance_incremental_book_L2_ETHUSDT_20240301.csv.gz
+  cols used  : local_timestamp, is_snapshot  (ordering = local_timestamp)
+  total rows                       : 20,236,010
+  snapshot rows (is_snapshot=True) : 6,219
+  non-snapshot rows                : 20,229,791
+  first local_timestamp (UTC)      : 2024-03-01T00:00:01.745913+00:00
+  last  local_timestamp (UTC)      : 2024-03-01T23:59:59.976243+00:00
+  span (s)                         : 86398.2
+  inter-update interval (ms)       :
+    p25 = 0.000  p50 = 0.000  p75 = 0.000
+    p95 = 0.000  p99 = 100.635
+
+--- (b) Trades file inspection [2024-03-01] ---
+  file       : binance_trades_ETHUSDT_20240301.csv.gz
+  total trades        : 1,263,129
+  total volume (ETH)  : 412,788.5296
+  mean trade size     : 0.326798 ETH
+  first ts (UTC)      : 2024-03-01T00:00:00.001150+00:00
+  last  ts (UTC)      : 2024-03-01T23:59:59.998492+00:00
+  span (s)            : 86400.0
+  trades/sec overall  : 14.62
+  trades/sec p50      : 6.00  (1s buckets)
+  trades/sec p95      : 56.00  (1s buckets)
+  gaps > 1 s          : count = 13606
+  largest gap (s)     : 5.397
+
+--- (c) Tick size verification [2024-03-01] ---
+  source        : binance_book_snapshot_5_ETHUSDT_20240301.csv.gz
+  rationale     : tick size is enforced at the quote (book) level;
+                  trade prints can VWAP/aggregate and mask the grid.
+  resolved cols : asks[0].price, bids[0].price
+  scale         : x1e8 integer (Binance prices have <= 8 decimals,
+                  so this is lossless and avoids float-GCD drift)
+  distinct >0 prices: 10,300
+  gcd estimate (USDT)      : 0.01
+  min-diff estimate (USDT) : 0.01
+  estimates agree          : True
+  documented Binance tick  : 0.01 USDT
+
+--- (d) Top-of-book spread analysis [2024-03-01] ---
+  source         : binance_book_snapshot_5_ETHUSDT_20240301.csv.gz
+  tick size used : 0.01  USDT  (from (c) for this date)
+  raw rows                    : 680,105
+  dropped (NaN top-of-book)   : 0
+  dropped (crossed/zero/etc)  : 0
+  valid rows used             : 680,105
+  P(spread == 1 tick)         : 99.40%
+  P(spread <= 2 ticks)        : 99.53%
+  spread distribution (ticks) :
+    p25 = 1.0  p50 = 1.0  p75 = 1.0
+    p95 = 1.0  max = 427
+  histogram saved : spread_hist_20240301.png
+
+======================================================================
+DATE: 2024-06-01
+======================================================================
+
+--- (a) L2 file inspection [2024-06-01] ---
+  file       : binance_incremental_book_L2_ETHUSDT_20240601.csv.gz
+  cols used  : local_timestamp, is_snapshot  (ordering = local_timestamp)
+  total rows                       : 7,512,492
+  snapshot rows (is_snapshot=True) : 2,021
+  non-snapshot rows                : 7,510,471
+  first local_timestamp (UTC)      : 2024-06-01T00:00:02.057656+00:00
+  last  local_timestamp (UTC)      : 2024-06-01T23:59:59.957847+00:00
+  span (s)                         : 86397.9
+  inter-update interval (ms)       :
+    p25 = 0.000  p50 = 0.000  p75 = 0.000
+    p95 = 100.128  p99 = 101.374
+
+--- (b) Trades file inspection [2024-06-01] ---
+  file       : binance_trades_ETHUSDT_20240601.csv.gz
+  total trades        : 399,381
+  total volume (ETH)  : 132,687.3072
+  mean trade size     : 0.332232 ETH
+  first ts (UTC)      : 2024-06-01T00:00:00.004106+00:00
+  last  ts (UTC)      : 2024-06-01T23:59:59.999180+00:00
+  span (s)            : 86400.0
+  trades/sec overall  : 4.62
+  trades/sec p50      : 2.00  (1s buckets)
+  trades/sec p95      : 20.00  (1s buckets)
+  gaps > 1 s          : count = 28122
+  largest gap (s)     : 11.779
+
+--- (c) Tick size verification [2024-06-01] ---
+  source        : binance_book_snapshot_5_ETHUSDT_20240601.csv.gz
+  rationale     : tick size is enforced at the quote (book) level;
+                  trade prints can VWAP/aggregate and mask the grid.
+  resolved cols : asks[0].price, bids[0].price
+  scale         : x1e8 integer (Binance prices have <= 8 decimals,
+                  so this is lossless and avoids float-GCD drift)
+  distinct >0 prices: 6,636
+  gcd estimate (USDT)      : 0.01
+  min-diff estimate (USDT) : 0.01
+  estimates agree          : True
+  documented Binance tick  : 0.01 USDT
+
+--- (d) Top-of-book spread analysis [2024-06-01] ---
+  source         : binance_book_snapshot_5_ETHUSDT_20240601.csv.gz
+  tick size used : 0.01  USDT  (from (c) for this date)
+  raw rows                    : 483,841
+  dropped (NaN top-of-book)   : 0
+  dropped (crossed/zero/etc)  : 0
+  valid rows used             : 483,841
+  P(spread == 1 tick)         : 99.84%
+  P(spread <= 2 ticks)        : 99.87%
+  spread distribution (ticks) :
+    p25 = 1.0  p50 = 1.0  p75 = 1.0
+    p95 = 1.0  max = 113
+  histogram saved : spread_hist_20240601.png
+
+======================================================================
+DATE: 2024-09-01
+======================================================================
+
+--- (a) L2 file inspection [2024-09-01] ---
+  file       : binance_incremental_book_L2_ETHUSDT_20240901.csv.gz
+  cols used  : local_timestamp, is_snapshot  (ordering = local_timestamp)
+  total rows                       : 20,849,918
+  snapshot rows (is_snapshot=True) : 2,010
+  non-snapshot rows                : 20,847,908
+  first local_timestamp (UTC)      : 2024-09-01T00:00:00.758245+00:00
+  last  local_timestamp (UTC)      : 2024-09-01T23:59:59.917203+00:00
+  span (s)                         : 86399.2
+  inter-update interval (ms)       :
+    p25 = 0.000  p50 = 0.000  p75 = 0.000
+    p95 = 0.000  p99 = 100.198
+
+--- (b) Trades file inspection [2024-09-01] ---
+  file       : binance_trades_ETHUSDT_20240901.csv.gz
+  total trades        : 1,357,443
+  total volume (ETH)  : 223,127.7760
+  mean trade size     : 0.164374 ETH
+  first ts (UTC)      : 2024-09-01T00:00:00.793098+00:00
+  last  ts (UTC)      : 2024-09-01T23:59:59.918051+00:00
+  span (s)            : 86399.1
+  trades/sec overall  : 15.71
+  trades/sec p50      : 4.00  (1s buckets)
+  trades/sec p95      : 96.00  (1s buckets)
+  gaps > 1 s          : count = 26290
+  largest gap (s)     : 15.963
+
+--- (c) Tick size verification [2024-09-01] ---
+  source        : binance_book_snapshot_5_ETHUSDT_20240901.csv.gz
+  rationale     : tick size is enforced at the quote (book) level;
+                  trade prints can VWAP/aggregate and mask the grid.
+  resolved cols : asks[0].price, bids[0].price
+  scale         : x1e8 integer (Binance prices have <= 8 decimals,
+                  so this is lossless and avoids float-GCD drift)
+  distinct >0 prices: 10,736
+  gcd estimate (USDT)      : 0.01
+  min-diff estimate (USDT) : 0.01
+  estimates agree          : True
+  documented Binance tick  : 0.01 USDT
+
+--- (d) Top-of-book spread analysis [2024-09-01] ---
+  source         : binance_book_snapshot_5_ETHUSDT_20240901.csv.gz
+  tick size used : 0.01  USDT  (from (c) for this date)
+  raw rows                    : 593,458
+  dropped (NaN top-of-book)   : 0
+  dropped (crossed/zero/etc)  : 0
+  valid rows used             : 593,458
+  P(spread == 1 tick)         : 99.80%
+  P(spread <= 2 ticks)        : 99.83%
+  spread distribution (ticks) :
+    p25 = 1.0  p50 = 1.0  p75 = 1.0
+    p95 = 1.0  max = 268
+  histogram saved : spread_hist_20240901.png
+
+======================================================================
+CROSS-DATE TICK REGIME CHECK
+======================================================================
+  2024-03-01: tick = 0.01
+  2024-06-01: tick = 0.01
+  2024-09-01: tick = 0.01
+  OK: identical tick size across all 3 dates.
+
+======================================================================
+FINAL SUMMARY
+======================================================================
+
+| Date | Rows used | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks | Trades/sec p50 | L2 interval p50 (ms) |
+|------|-----------|------------------|--------------------|--------------|-----------|----------------|----------------------|
+| 2024-03-01 | 680,105 | 99.40% | 99.53% | 1.0 | 1.0 | 6.00 | 0.000 |
+| 2024-06-01 | 483,841 | 99.84% | 99.87% | 1.0 | 1.0 | 2.00 | 0.000 |
+| 2024-09-01 | 593,458 | 99.80% | 99.83% | 1.0 | 1.0 | 4.00 | 0.000 |
+
+P(spread=1 tick) range across dates: 99.40% - 99.84%  (span 0.44 pp)
+  OK: span <= 15 pp -- spread regime is reasonably consistent across dates.
+
+Interpretation guidance (decision belongs to the human reader):
+
+  P(spread == 1 tick) interpretation for ETHUSDT spot:
+    > 95%   -> severe degeneracy; pair-switch strongly recommended
+    80-95%  -> marginal; possibly usable with documented caveats
+    60-80%  -> acceptable; quote-placement is a meaningful decision
+    < 60%   -> good; healthy decision space
+
+  Cross-date consistency check:
+    If P(spread == 1 tick) varies by more than 15 pp across the 3 dates,
+    the ETHUSDT spread regime itself is non-stationary across the year
+    -- flag this as a finding for the thesis writeup.
+
+Report length: 3 dates  /  outputs in processed/
