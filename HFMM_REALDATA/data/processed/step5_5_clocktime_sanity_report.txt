@@ -1,0 +1,83 @@
+Step 5.5 clock-time resampled spread sanity report
+Generated  : 2026-05-18T22:56:13.625081+00:00
+Dates      : 2024-03-01, 2024-06-01, 2024-09-01
+Cadences   : raw + 100ms, 500ms, 1000ms
+Tick size  : 0.01 USDT  (verified in Step 5 via GCD+min-diff)
+
+======================================================================
+DATE: 2024-03-01
+======================================================================
+  source                : binance_book_snapshot_5_ETHUSDT_20240301.csv.gz
+  raw rows              : 680,105
+  after NaN drop        : 680,105
+  after crossed/zero    : 680,105
+
+=== 2024-03-01 ===
+
+| Cadence | Grid points | Used | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks |
+|---------|-------------|------|------------------|--------------------|--------------|-----------|
+| raw (Step 5) | - | 680,105 |  99.40% |  99.53% | 1.0 | 1.0 |
+| 100ms | 863,983 | 863,983 |  99.53% |  99.63% | 1.0 | 1.0 |
+| 500ms | 172,797 | 172,797 |  99.52% |  99.62% | 1.0 | 1.0 |
+| 1000ms | 86,399 | 86,399 |  99.55% |  99.64% | 1.0 | 1.0 |
+
+======================================================================
+DATE: 2024-06-01
+======================================================================
+  source                : binance_book_snapshot_5_ETHUSDT_20240601.csv.gz
+  raw rows              : 483,841
+  after NaN drop        : 483,841
+  after crossed/zero    : 483,841
+
+=== 2024-06-01 ===
+
+| Cadence | Grid points | Used | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks |
+|---------|-------------|------|------------------|--------------------|--------------|-----------|
+| raw (Step 5) | - | 483,841 |  99.84% |  99.87% | 1.0 | 1.0 |
+| 100ms | 863,980 | 863,980 |  99.91% |  99.93% | 1.0 | 1.0 |
+| 500ms | 172,796 | 172,796 |  99.92% |  99.93% | 1.0 | 1.0 |
+| 1000ms | 86,398 | 86,398 |  99.92% |  99.94% | 1.0 | 1.0 |
+
+======================================================================
+DATE: 2024-09-01
+======================================================================
+  source                : binance_book_snapshot_5_ETHUSDT_20240901.csv.gz
+  raw rows              : 593,458
+  after NaN drop        : 593,458
+  after crossed/zero    : 593,458
+
+=== 2024-09-01 ===
+
+| Cadence | Grid points | Used | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks |
+|---------|-------------|------|------------------|--------------------|--------------|-----------|
+| raw (Step 5) | - | 593,458 |  99.80% |  99.83% | 1.0 | 1.0 |
+| 100ms | 863,992 | 863,992 |  99.86% |  99.89% | 1.0 | 1.0 |
+| 500ms | 172,799 | 172,799 |  99.85% |  99.88% | 1.0 | 1.0 |
+| 1000ms | 86,400 | 86,400 |  99.86% |  99.89% | 1.0 | 1.0 |
+
+======================================================================
+CROSS-DATE SUMMARY: P(spread = 1 tick) by cadence
+======================================================================
+
+| Cadence | 2024-03-01 | 2024-06-01 | 2024-09-01 |
+|---------|------------|------------|------------|
+| raw |  99.40% |  99.84% |  99.80% |
+| 100ms |  99.53% |  99.91% |  99.86% |
+| 500ms |  99.52% |  99.92% |  99.85% |
+| 1000ms |  99.55% |  99.92% |  99.86% |
+
+Interpretation guidance (decision belongs to the human reader):
+
+  If P(spread=1 tick) remains > 95% across ALL cadences (raw, 100ms,
+    500ms, 1000ms) for ALL 3 dates:
+    -> ETHUSDT spot is unsuitable for spread-based MM RL regardless
+       of discretization. Venue pivot is fully justified.
+
+  If P(spread=1 tick) drops below 80% at any cadence:
+    -> ETHUSDT spot may still be viable with appropriate discretization.
+       Reconsider pivot decision; document the discretization-degeneracy
+       tradeoff.
+
+  If degeneracy stays in the 80-95% band:
+    -> Marginal; document this in methodology and let downstream
+       decisions drive the choice.

@@ -70,3 +70,5 @@ HFMM_REALDATA/data/processed/*
 !HFMM_REALDATA/data/processed/spread_hist_20240301.png
 !HFMM_REALDATA/data/processed/spread_hist_20240601.png
 !HFMM_REALDATA/data/processed/spread_hist_20240901.png
+# Step 5.5 evidence artifact (clock-time resampled spread sanity check)
+!HFMM_REALDATA/data/processed/step5_5_clocktime_sanity_report.txt
