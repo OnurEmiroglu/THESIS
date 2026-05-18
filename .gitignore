@@ -58,3 +58,10 @@ results/runs/*
 
 # ---- Claude Code harness runtime lockfiles ----
 .claude/*.lock
+
+# HFMM_REALDATA raw + processed datasets (large binaries, downloaded artifacts)
+HFMM_REALDATA/data/raw/*
+HFMM_REALDATA/data/processed/*
+!HFMM_REALDATA/data/raw/.gitkeep
+!HFMM_REALDATA/data/processed/.gitkeep
+!HFMM_REALDATA/data/raw/_manifest.json
