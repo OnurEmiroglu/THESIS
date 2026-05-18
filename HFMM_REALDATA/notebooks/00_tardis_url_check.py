@@ -36,6 +36,13 @@ the payload. Two changes vs. the first attempt:
          documented and is tied to specific documented combinations. We fall
          back to BTCUSDT spot (or another documented pair) for the study.
 
+   Group D — book_snapshot_5 for ETHUSDT spot, 2024-{03,06,09}-01, 3 targets:
+     Reconstructed top-5 level snapshots. Needed for the Step 5 spread-
+     degeneracy decision gate (top-of-book bid/ask per update). If free-tier
+     access exists for this datatype on our target pair, we use it directly;
+     if not, we fall back to a simpler proxy (e.g. on-the-fly L2 book replay)
+     and document the limitation in the methodology.
+
 Pair/date selection for the actual study (ETHUSDT vs BTCUSDT vs mid-cap, what
 time window) is a separate downstream decision driven by the Step 5 spread-
 degeneracy metric, not by this script.
@@ -78,6 +85,13 @@ VALIDATION_TARGETS = [
     {"exchange": "binance", "datatype": "trades",              "date": "2024-03-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "trades",              "date": "2024-06-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "trades",              "date": "2024-09-01", "symbol": "ETHUSDT"},
+
+    # === Group D: book_snapshot_5 for ETHUSDT spot (needed for Step 5 spread metric) ===
+    # If free-tier, we use this for top-of-book reconstruction; if not, we fall back
+    # to a simpler proxy and document the limitation in the methodology.
+    {"exchange": "binance", "datatype": "book_snapshot_5", "date": "2024-03-01", "symbol": "ETHUSDT"},
+    {"exchange": "binance", "datatype": "book_snapshot_5", "date": "2024-06-01", "symbol": "ETHUSDT"},
+    {"exchange": "binance", "datatype": "book_snapshot_5", "date": "2024-09-01", "symbol": "ETHUSDT"},
 ]
 
 BASE_URL = "https://datasets.tardis.dev/v1"

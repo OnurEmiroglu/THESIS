@@ -1,7 +1,21 @@
-"""Download Tardis free-tier ETHUSDT spot samples (Group C from Step 3).
+"""Download Tardis free-tier ETHUSDT spot samples (Group C + Group D).
 
-Phase 1A Step 4: download 6 files (3 dates x 2 datatypes, ~323 MB total) for
-Binance Spot ETHUSDT, write a tracked manifest, validate integrity per file.
+Phase 1A Step 4 + 4.5: download 9 files for Binance Spot ETHUSDT, write a
+tracked manifest, validate integrity per file. The 9 files span 3 first-of-
+month dates (2024-03-01, 2024-06-01, 2024-09-01) x 3 datatypes
+(incremental_book_L2, trades, book_snapshot_5).
+
+Originally Step 4 covered 6 files (Group C: L2 + trades, ~323 MB). Step 4.5
+appends 3 book_snapshot_5 files (Group D, ~38 MB) needed for the Step 5
+spread-degeneracy decision gate.
+
+Manifest-merge semantics: DOWNLOAD_TARGETS is the source of truth. On rerun,
+files already downloaded with matching sha256 are skipped and their existing
+manifest entries are reused verbatim (preserves download_utc, content_length
+headers, etc. from the original download). New targets are downloaded fresh.
+The final manifest contains exactly the entries listed in DOWNLOAD_TARGETS,
+in that order — old entries for files NOT in DOWNLOAD_TARGETS are dropped,
+but the orphan-file preflight check guards against losing data silently.
 
 Validation per file (in order, failing fast on any mismatch):
   - HTTP status 200
@@ -45,14 +59,20 @@ from pathlib import Path
 import requests
 
 
-# Group C from Step 3: Binance Spot ETHUSDT, 3 first-of-month dates x 2 datatypes.
+# Binance Spot ETHUSDT, 3 first-of-month dates x 3 datatypes.
+# Group C (Step 4) + Group D (Step 4.5). Order is preserved in the manifest.
 DOWNLOAD_TARGETS = [
+    # === Group C: incremental_book_L2 + trades (Step 4) ===
     {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-03-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-06-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-09-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "trades",              "date": "2024-03-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "trades",              "date": "2024-06-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "trades",              "date": "2024-09-01", "symbol": "ETHUSDT"},
+    # === Group D: book_snapshot_5 (Step 4.5, appended) ===
+    {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-03-01", "symbol": "ETHUSDT"},
+    {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-06-01", "symbol": "ETHUSDT"},
+    {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-09-01", "symbol": "ETHUSDT"},
 ]
 
 BASE_URL = "https://datasets.tardis.dev/v1"
