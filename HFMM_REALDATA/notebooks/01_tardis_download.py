@@ -1,21 +1,34 @@
-"""Download Tardis free-tier ETHUSDT spot samples (Group C + Group D).
+"""Download Tardis free-tier samples via a profile selector.
 
-Phase 1A Step 4 + 4.5: download 9 files for Binance Spot ETHUSDT, write a
-tracked manifest, validate integrity per file. The 9 files span 3 first-of-
-month dates (2024-03-01, 2024-06-01, 2024-09-01) x 3 datatypes
-(incremental_book_L2, trades, book_snapshot_5).
+Phase 1A covers two venue-scoped datasets, each with 9 files (3 dates x 3
+datatypes for first-of-month 2024-{03,06,09}-01):
 
-Originally Step 4 covered 6 files (Group C: L2 + trades, ~323 MB). Step 4.5
-appends 3 book_snapshot_5 files (Group D, ~38 MB) needed for the Step 5
-spread-degeneracy decision gate.
+  - "ethusdt_spot"  : Binance Spot ETHUSDT (Step 4 + 4.5 original target).
+  - "btcusdt_perp"  : Binance Futures BTCUSDT perpetual (post-pivot target,
+                      Step 6 onward, after ETHUSDT showed structural spread
+                      degeneracy >= 99.40% at all tested cadences).
 
-Manifest-merge semantics: DOWNLOAD_TARGETS is the source of truth. On rerun,
-files already downloaded with matching sha256 are skipped and their existing
-manifest entries are reused verbatim (preserves download_utc, content_length
-headers, etc. from the original download). New targets are downloaded fresh.
-The final manifest contains exactly the entries listed in DOWNLOAD_TARGETS,
-in that order — old entries for files NOT in DOWNLOAD_TARGETS are dropped,
-but the orphan-file preflight check guards against losing data silently.
+PROFILES (below) is the source of truth for what each dataset comprises:
+its raw_dir, manifest_path, proc_dir, fname_prefix, and the 9-entry target
+list. ACTIVE_PROFILE selects which profile this run operates on; the rest
+of the script is profile-agnostic. Flipping ACTIVE_PROFILE back to
+"ethusdt_spot" reproduces the original Step 4 + 4.5 behavior byte-for-byte
+because that profile's paths are exactly the ones the pre-profile code
+hardcoded.
+
+Manifest-merge semantics: the active profile's targets are the source of
+truth for its manifest. On rerun, files already downloaded with matching
+sha256 are skipped and their existing manifest entries are reused verbatim
+(preserves download_utc, content_length headers, etc. from the original
+download). New targets are downloaded fresh. The final manifest contains
+exactly the entries listed in the active profile's targets, in that order;
+old entries for files NOT in the target list are dropped, but the orphan-
+file preflight check guards against losing data silently.
+
+The two profiles use *different* raw_dir and manifest_path values, so a
+run with ACTIVE_PROFILE="btcusdt_perp" cannot read or write the
+ethusdt_spot manifest, and vice versa. This venue isolation is the
+mechanism that protects each manifest from cross-contamination.
 
 Validation per file (in order, failing fast on any mismatch):
   - HTTP status 200
@@ -42,7 +55,9 @@ Download mechanics:
   - progress: prints a one-line milestone roughly every 10% of expected bytes
 
 Filename convention: {exchange}_{datatype}_{symbol}_{YYYYMMDD}.csv.gz
-Manifest path: HFMM_REALDATA/data/raw/_manifest.json  (this file IS tracked).
+Manifest path: <profile.raw_dir>/_manifest.json  (this file IS tracked).
+  - ethusdt_spot : HFMM_REALDATA/data/raw/_manifest.json
+  - btcusdt_perp : HFMM_REALDATA/data/phase1a_btcusdt_perp/raw/_manifest.json
 All timestamps timezone-aware UTC.
 """
 
@@ -59,22 +74,6 @@ from pathlib import Path
 import requests
 
 
-# Binance Spot ETHUSDT, 3 first-of-month dates x 3 datatypes.
-# Group C (Step 4) + Group D (Step 4.5). Order is preserved in the manifest.
-DOWNLOAD_TARGETS = [
-    # === Group C: incremental_book_L2 + trades (Step 4) ===
-    {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-03-01", "symbol": "ETHUSDT"},
-    {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-06-01", "symbol": "ETHUSDT"},
-    {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-09-01", "symbol": "ETHUSDT"},
-    {"exchange": "binance", "datatype": "trades",              "date": "2024-03-01", "symbol": "ETHUSDT"},
-    {"exchange": "binance", "datatype": "trades",              "date": "2024-06-01", "symbol": "ETHUSDT"},
-    {"exchange": "binance", "datatype": "trades",              "date": "2024-09-01", "symbol": "ETHUSDT"},
-    # === Group D: book_snapshot_5 (Step 4.5, appended) ===
-    {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-03-01", "symbol": "ETHUSDT"},
-    {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-06-01", "symbol": "ETHUSDT"},
-    {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-09-01", "symbol": "ETHUSDT"},
-]
-
 BASE_URL = "https://datasets.tardis.dev/v1"
 CHUNK_SIZE = 1_048_576  # 1 MiB
 TIMEOUT_S = 30
@@ -82,8 +81,63 @@ GZIP_MAGIC = b"\x1f\x8b"
 
 # Resolve paths relative to this script (HFMM_REALDATA/notebooks/01_tardis_download.py).
 SCRIPT_DIR = Path(__file__).resolve().parent
-RAW_DIR = (SCRIPT_DIR / ".." / "data" / "raw").resolve()
-MANIFEST_PATH = RAW_DIR / "_manifest.json"
+HFMM_ROOT = SCRIPT_DIR.parent
+
+# === Dataset profiles ====================================================
+# Each profile bundles everything venue-specific so the rest of the script
+# is data/path-agnostic. The "ethusdt_spot" entry's raw_dir/manifest_path
+# match the pre-profile-refactor hardcoded paths exactly -- flipping
+# ACTIVE_PROFILE back reproduces Step 4 + 4.5 behavior byte-for-byte.
+# proc_dir + report_basename are carried here for cross-script consistency
+# with notebooks 02/03 (script 01 itself does not use them).
+PROFILES = {
+    "ethusdt_spot": {
+        "raw_dir":        HFMM_ROOT / "data" / "raw",
+        "manifest_path":  HFMM_ROOT / "data" / "raw" / "_manifest.json",
+        "proc_dir":       HFMM_ROOT / "data" / "processed",
+        "report_basename": "step5_inspection_report.txt",
+        "fname_prefix":   "binance",
+        "targets": [
+            # === Group C: incremental_book_L2 + trades (Step 4) ===
+            {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-03-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-06-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-09-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "trades",              "date": "2024-03-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "trades",              "date": "2024-06-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "trades",              "date": "2024-09-01", "symbol": "ETHUSDT"},
+            # === Group D: book_snapshot_5 (Step 4.5, appended) ===
+            {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-03-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-06-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-09-01", "symbol": "ETHUSDT"},
+        ],
+    },
+    "btcusdt_perp": {
+        "raw_dir":        HFMM_ROOT / "data" / "phase1a_btcusdt_perp" / "raw",
+        "manifest_path":  HFMM_ROOT / "data" / "phase1a_btcusdt_perp" / "raw" / "_manifest.json",
+        "proc_dir":       HFMM_ROOT / "data" / "phase1a_btcusdt_perp" / "processed",
+        "report_basename": "step5_inspection_report.txt",
+        "fname_prefix":   "binance-futures",
+        "targets": [
+            # === Group E: Binance Futures BTCUSDT perpetual (pivot venue, 2024-{03,06,09}-01) ===
+            {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-03-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-06-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-09-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-03-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-06-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-09-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-03-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-06-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-09-01", "symbol": "BTCUSDT"},
+        ],
+    },
+}
+
+ACTIVE_PROFILE = "btcusdt_perp"
+
+_active = PROFILES[ACTIVE_PROFILE]
+DOWNLOAD_TARGETS = _active["targets"]
+RAW_DIR = _active["raw_dir"].resolve()
+MANIFEST_PATH = _active["manifest_path"].resolve()
 
 
 def build_url(t: dict) -> str:

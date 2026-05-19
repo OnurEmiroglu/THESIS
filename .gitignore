@@ -72,3 +72,6 @@ HFMM_REALDATA/data/processed/*
 !HFMM_REALDATA/data/processed/spread_hist_20240901.png
 # Step 5.5 evidence artifact (clock-time resampled spread sanity check)
 !HFMM_REALDATA/data/processed/step5_5_clocktime_sanity_report.txt
+# Phase 1A perp pivot: BTCUSDT-perp raw dataset (manifest tracked, gz binaries ignored)
+HFMM_REALDATA/data/phase1a_btcusdt_perp/raw/*.csv.gz
+!HFMM_REALDATA/data/phase1a_btcusdt_perp/raw/_manifest.json

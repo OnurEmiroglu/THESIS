@@ -43,6 +43,14 @@ the payload. Two changes vs. the first attempt:
      if not, we fall back to a simpler proxy (e.g. on-the-fly L2 book replay)
      and document the limitation in the methodology.
 
+   Group E - Binance Futures BTCUSDT perpetual, 2024-{03,06,09}-01, 9 targets:
+     Pivot venue after Phase 1A on ETHUSDT spot showed P(spread=1 tick)
+     >= 99.40% at raw and >= 99.52% at 100ms / 500ms / 1s cadences across
+     all 3 dates (per step5_5_clocktime_sanity_report.txt, min cell at
+     2024-03-01 / 500ms). Group E replays the same probe pattern on Binance
+     Futures BTCUSDT perp: 3 dates x 3 datatypes (incremental_book_L2,
+     trades, book_snapshot_5). Snapshot depth: top-5 only.
+
 Pair/date selection for the actual study (ETHUSDT vs BTCUSDT vs mid-cap, what
 time window) is a separate downstream decision driven by the Step 5 spread-
 degeneracy metric, not by this script.
@@ -92,6 +100,18 @@ VALIDATION_TARGETS = [
     {"exchange": "binance", "datatype": "book_snapshot_5", "date": "2024-03-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "book_snapshot_5", "date": "2024-06-01", "symbol": "ETHUSDT"},
     {"exchange": "binance", "datatype": "book_snapshot_5", "date": "2024-09-01", "symbol": "ETHUSDT"},
+
+    # === Group E: Binance Futures BTCUSDT perpetual (pivot venue, 2024-{03,06,09}-01) ===
+    # Same 3 dates x 3 datatypes pattern as Group C+D, on the perp venue.
+    {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-03-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-06-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-09-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-03-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-06-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-09-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-03-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-06-01", "symbol": "BTCUSDT"},
+    {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-09-01", "symbol": "BTCUSDT"},
 ]
 
 BASE_URL = "https://datasets.tardis.dev/v1"
