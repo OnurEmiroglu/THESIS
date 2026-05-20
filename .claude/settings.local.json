@@ -83,7 +83,8 @@
       "Bash(awk '$1==\"i/lf\" && $2==\"w/crlf\" {print $4}')",
       "Bash(awk '$1==\"i/lf\" && $2==\"w/crlf\" && \\($4 ~ /\\\\.csv$/ || $4 ~ /\\\\.txt$/\\) {print $4}')",
       "Bash(awk '$2==\"w/mixed\" {print $4}')",
-      "Bash(echo \"=== C. last bytes of metrics_detector_compare.csv \\(should end \\\\\\\\n, not \\\\\\\\r\\\\\\\\n\\) ===\")"
+      "Bash(echo \"=== C. last bytes of metrics_detector_compare.csv \\(should end \\\\\\\\n, not \\\\\\\\r\\\\\\\\n\\) ===\")",
+      "Bash(.venv/Scripts/python *)"
     ]
   }
 }
