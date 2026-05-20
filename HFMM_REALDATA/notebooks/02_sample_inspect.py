@@ -54,20 +54,82 @@ import pandas as pd  # noqa: E402
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-RAW_DIR = (SCRIPT_DIR / ".." / "data" / "raw").resolve()
-PROC_DIR = (SCRIPT_DIR / ".." / "data" / "processed").resolve()
-MANIFEST_PATH = RAW_DIR / "_manifest.json"
-REPORT_PATH = PROC_DIR / "step5_inspection_report.txt"
+HFMM_ROOT = SCRIPT_DIR.parent
 
-DATES = ["2024-03-01", "2024-06-01", "2024-09-01"]
+# === Dataset profiles (shape matches 01_tardis_download.py) ===
+# NUMERIC-LEVEL byte-for-byte preservation under the "ethusdt_spot" profile:
+# flipping ACTIVE_PROFILE back yields the same canonical tick (0.01), the same
+# rounding policy (np.round / banker's, half-to-even), and the same percentile
+# values at the previously-emitted breakpoints (p25/p50/p75/p95/max), so any
+# downstream consumer keying off those numeric fields sees identical input.
+# The REPORT TEXT now also emits p90/p99 percentile lines, the per-date
+# rounding-policy + rounded-to-{0,1,>1} counts, the spread-table preamble line,
+# and (when triggered) the LOUD WARN block from infer_tick_size(); these are
+# textual additions and do not alter pre-existing numeric output.
+# proc_dir + report_basename + fname_prefix are bundled for cross-script
+# consistency with notebook 03. documented_tick is the venue spec and is now
+# the source of truth for the spread math (NOT the per-date inferred value);
+# infer_tick_size() runs as a diagnostic that warns loudly when it disagrees.
+PROFILES = {
+    "ethusdt_spot": {
+        "raw_dir":         HFMM_ROOT / "data" / "raw",
+        "manifest_path":   HFMM_ROOT / "data" / "raw" / "_manifest.json",
+        "proc_dir":        HFMM_ROOT / "data" / "processed",
+        "report_basename": "step5_inspection_report.txt",
+        "fname_prefix":    "binance",
+        "documented_tick": 0.01,
+        "venue_label":     "Binance Spot ETHUSDT",
+        "targets": [
+            {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-03-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-06-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "incremental_book_L2", "date": "2024-09-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "trades",              "date": "2024-03-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "trades",              "date": "2024-06-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "trades",              "date": "2024-09-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-03-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-06-01", "symbol": "ETHUSDT"},
+            {"exchange": "binance", "datatype": "book_snapshot_5",     "date": "2024-09-01", "symbol": "ETHUSDT"},
+        ],
+    },
+    "btcusdt_perp": {
+        "raw_dir":         HFMM_ROOT / "data" / "phase1a_btcusdt_perp" / "raw",
+        "manifest_path":   HFMM_ROOT / "data" / "phase1a_btcusdt_perp" / "raw" / "_manifest.json",
+        "proc_dir":        HFMM_ROOT / "data" / "phase1a_btcusdt_perp" / "processed",
+        "report_basename": "step5_inspection_report.txt",
+        "fname_prefix":    "binance-futures",
+        "documented_tick": 0.10,
+        "venue_label":     "Binance Futures BTCUSDT (perp)",
+        "targets": [
+            {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-03-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-06-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "incremental_book_L2", "date": "2024-09-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-03-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-06-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "trades",              "date": "2024-09-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-03-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-06-01", "symbol": "BTCUSDT"},
+            {"exchange": "binance-futures", "datatype": "book_snapshot_5",     "date": "2024-09-01", "symbol": "BTCUSDT"},
+        ],
+    },
+}
 
-# 1e8 scale is lossless for Binance Spot ETHUSDT prices (max 8 decimals on any
+ACTIVE_PROFILE = "btcusdt_perp"
+
+_active = PROFILES[ACTIVE_PROFILE]
+RAW_DIR = _active["raw_dir"].resolve()
+PROC_DIR = _active["proc_dir"].resolve()
+MANIFEST_PATH = _active["manifest_path"].resolve()
+REPORT_PATH = PROC_DIR / _active["report_basename"]
+DATES = sorted({t["date"] for t in _active["targets"]})
+_TARGETS_BY_KEY = {(t["datatype"], t["date"]): t for t in _active["targets"]}
+DOCUMENTED_TICK = _active["documented_tick"]
+VENUE_LABEL = _active["venue_label"]
+
+# 1e8 scale is lossless for Binance USDT-pair prices (max 8 decimals on any
 # major USDT pair) and keeps GCD / min-diff in integer arithmetic so we avoid
 # float-precision drift that would otherwise contaminate the inferred grid.
 TICK_INT_SCALE = 100_000_000
 TICK_SAMPLE_SIZE = 10_000
-
-DOCUMENTED_BINANCE_ETHUSDT_TICK = 0.01
 
 SPREAD_HIST_MAX_TICK = 20
 SPREAD_HIST_OVERFLOW_LABEL = "20+"
@@ -89,7 +151,11 @@ class Tee:
 
 
 def filename_for(datatype: str, date: str) -> Path:
-    return RAW_DIR / f"binance_{datatype}_ETHUSDT_{date.replace('-', '')}.csv.gz"
+    # Resolve exchange + symbol from the active profile's target list so the
+    # filename matches exactly what 01_tardis_download.py wrote. No hardcoded
+    # venue/symbol here.
+    t = _TARGETS_BY_KEY[(datatype, date)]
+    return RAW_DIR / f"{t['exchange']}_{datatype}_{t['symbol']}_{date.replace('-', '')}.csv.gz"
 
 
 def us_to_utc(us: int) -> datetime:
@@ -202,9 +268,11 @@ def inspect_trades(log: Tee, date: str) -> dict:
     n_over_1s = int(over_1s.sum())
     largest_gap_s = float(gaps_s.max()) if len(gaps_s) else 0.0
 
+    sym = _TARGETS_BY_KEY[("trades", date)]["symbol"]
+    base = sym[:-4] if sym.endswith("USDT") else sym
     log(f"  total trades        : {total:,}")
-    log(f"  total volume (ETH)  : {total_vol:,.4f}")
-    log(f"  mean trade size     : {mean_size:.6f} ETH")
+    log(f"  total volume ({base})  : {total_vol:,.4f}")
+    log(f"  mean trade size     : {mean_size:.6f} {base}")
     log(f"  first ts (UTC)      : {us_to_utc(first_us).isoformat()}")
     log(f"  last  ts (UTC)      : {us_to_utc(last_us).isoformat()}")
     log(f"  span (s)            : {span_s:.1f}")
@@ -280,17 +348,33 @@ def infer_tick_size(log: Tee, date: str) -> dict:
     min_diff_estimate = min_diff_int / TICK_INT_SCALE
 
     agree = gcd_int == min_diff_int
+    documented_int = int(round(DOCUMENTED_TICK * TICK_INT_SCALE))
+    agree_with_documented = (gcd_int == documented_int) and (min_diff_int == documented_int)
     log(f"  gcd estimate (USDT)      : {gcd_estimate}")
     log(f"  min-diff estimate (USDT) : {min_diff_estimate}")
     log(f"  estimates agree          : {agree}")
-    log(f"  documented Binance tick  : {DOCUMENTED_BINANCE_ETHUSDT_TICK} USDT")
+    log(f"  documented {VENUE_LABEL} tick: {DOCUMENTED_TICK} USDT")
+    log(f"  inferred vs documented   : {agree_with_documented}")
     if not agree:
         log("  WARN: gcd != min-diff -- inspect distinct price grid manually.")
+    if not agree_with_documented:
+        log("  ============================================================")
+        log("  LOUD WARN: inferred tick disagrees with documented venue tick")
+        log("  ------------------------------------------------------------")
+        log(f"    documented : {DOCUMENTED_TICK} USDT  ({VENUE_LABEL})")
+        log(f"    gcd        : {gcd_estimate} USDT")
+        log(f"    min-diff   : {min_diff_estimate} USDT")
+        log("    interpretation : off-grid prices in this date's data")
+        log("                     (likely Tardis reconstructor or fp64")
+        log("                     artifact); not a venue tick-regime change.")
+        log(f"    PROCEEDING with documented tick = {DOCUMENTED_TICK} USDT.")
+        log("  ============================================================")
 
     return {
         "tick_gcd": gcd_estimate,
         "tick_min_diff": min_diff_estimate,
         "tick_agree": agree,
+        "tick_agree_with_documented": agree_with_documented,
     }
 
 
@@ -302,7 +386,7 @@ def analyse_spread(log: Tee, date: str, tick_size: float) -> dict:
     log(f"--- (d) Top-of-book spread analysis [{date}] ---")
     path = filename_for("book_snapshot_5", date)
     log(f"  source         : {path.name}")
-    log(f"  tick size used : {tick_size}  USDT  (from (c) for this date)")
+    log(f"  tick size used : {tick_size}  USDT  (documented venue tick; see (c) for diagnostic)")
     ask_col, bid_col = "asks[0].price", "bids[0].price"
 
     df = pd.read_csv(
@@ -323,22 +407,33 @@ def analyse_spread(log: Tee, date: str, tick_size: float) -> dict:
     n_crossed_or_zero = int((~valid).sum())
 
     spread_price = ask[valid] - bid[valid]
+    # Rounding policy = np.round (banker's, half-to-even). Held fixed; do
+    # not change without an explicit decision. Sub-tick spreads (round-to-0)
+    # are impossible per venue spec and indicate off-grid data-quality
+    # artifacts in the source file -- counts reported for the record.
     spread_ticks = np.round(spread_price / tick_size).astype(int)
+    n_round_0   = int((spread_ticks == 0).sum())
+    n_round_1   = int((spread_ticks == 1).sum())
+    n_round_gt1 = int((spread_ticks > 1).sum())
 
     p_eq_1 = float((spread_ticks == 1).mean())
     p_le_2 = float((spread_ticks <= 2).mean())
-    p25, p50, p75, p95 = np.percentile(spread_ticks, [25, 50, 75, 95])
+    p25, p50, p75, p90, p95, p99 = np.percentile(spread_ticks, [25, 50, 75, 90, 95, 99])
     max_t = int(spread_ticks.max())
 
     log(f"  raw rows                    : {n_raw:,}")
     log(f"  dropped (NaN top-of-book)   : {n_nan_dropped:,}")
     log(f"  dropped (crossed/zero/etc)  : {n_crossed_or_zero:,}")
     log(f"  valid rows used             : {n_valid:,}")
+    log(f"  rounding policy             : np.round (banker's, half-to-even) on spread / tick")
+    log(f"  rounded to 0 ticks          : {n_round_0:,}  (sub-tick: impossible spread, off-grid artifact)")
+    log(f"  rounded to 1 tick           : {n_round_1:,}")
+    log(f"  rounded to > 1 tick         : {n_round_gt1:,}")
     log(f"  P(spread == 1 tick)         : {p_eq_1 * 100:.2f}%")
     log(f"  P(spread <= 2 ticks)        : {p_le_2 * 100:.2f}%")
     log(f"  spread distribution (ticks) :")
     log(f"    p25 = {p25:.1f}  p50 = {p50:.1f}  p75 = {p75:.1f}")
-    log(f"    p95 = {p95:.1f}  max = {max_t}")
+    log(f"    p90 = {p90:.1f}  p95 = {p95:.1f}  p99 = {p99:.1f}  max = {max_t}")
 
     # Histogram clipped at SPREAD_HIST_MAX_TICK with a single overflow bucket.
     clipped = np.minimum(spread_ticks, SPREAD_HIST_MAX_TICK + 1)
@@ -355,9 +450,9 @@ def analyse_spread(log: Tee, date: str, tick_size: float) -> dict:
     ax.set_xticks(ticks_pos)
     ax.set_xticklabels(ticks_lab, fontsize=8)
     ax.set_title(
-        f"ETHUSDT spot spread distribution {date}\n"
+        f"{VENUE_LABEL} spread distribution {date}\n"
         f"P(spread = 1 tick) = {p_eq_1 * 100:.2f}%   "
-        f"P(spread ≤ 2 ticks) = {p_le_2 * 100:.2f}%"
+        f"P(spread <= 2 ticks) = {p_le_2 * 100:.2f}%"
     )
     fig.tight_layout()
     out_png = PROC_DIR / f"spread_hist_{date.replace('-', '')}.png"
@@ -369,12 +464,17 @@ def analyse_spread(log: Tee, date: str, tick_size: float) -> dict:
         "spread_rows_used": n_valid,
         "spread_rows_filtered_crossed": n_crossed_or_zero,
         "spread_rows_filtered_nan": n_nan_dropped,
+        "spread_rounded_to_0": n_round_0,
+        "spread_rounded_to_1": n_round_1,
+        "spread_rounded_gt_1": n_round_gt1,
         "p_eq_1": p_eq_1,
         "p_le_2": p_le_2,
         "spread_p25_ticks": float(p25),
         "spread_p50_ticks": float(p50),
         "spread_p75_ticks": float(p75),
+        "spread_p90_ticks": float(p90),
         "spread_p95_ticks": float(p95),
+        "spread_p99_ticks": float(p99),
         "spread_max_ticks": max_t,
     }
 
@@ -414,9 +514,13 @@ def main() -> int:
         r_l2 = inspect_l2(log, date)
         r_tr = inspect_trades(log, date)
         r_tk = infer_tick_size(log, date)
-        # Use min-diff as the canonical tick size for spread bucketing.
-        # If both estimates agree (expected for a clean grid) it's identical.
-        tick = r_tk["tick_min_diff"]
+        # Canonical tick = venue's documented tick (DOCUMENTED_TICK).
+        # infer_tick_size() runs as a diagnostic only; if it disagrees with
+        # the documented tick a LOUD WARN block fires inside that function,
+        # but spread analysis proceeds with the documented value. The venue
+        # spec is the source of truth; per-date inference can be contaminated
+        # by off-grid data-quality artifacts (see 2024-03-01 BTCUSDT-perp).
+        tick = DOCUMENTED_TICK
         r_sp = analyse_spread(log, date, tick)
         per_date[date] = {**r_l2, **r_tr, **r_tk, **r_sp, "tick_size_used": tick}
 
@@ -425,6 +529,9 @@ def main() -> int:
     log("=" * 70)
     log("CROSS-DATE TICK REGIME CHECK")
     log("=" * 70)
+    # Invariant guard: with canonical_tick sourced from a profile-level
+    # constant, this triggers only if PROFILES is manually edited to
+    # introduce per-date tick inconsistency within one profile.
     ticks = {d: per_date[d]["tick_size_used"] for d in DATES}
     for d, t in ticks.items():
         log(f"  {d}: tick = {t}")
@@ -438,6 +545,9 @@ def main() -> int:
     log("=" * 70)
     log("FINAL SUMMARY")
     log("=" * 70)
+    log()
+    log("Spread is computed using the venue's documented tick (0.10 USDT for")
+    log("binance-futures BTCUSDT, 0.01 USDT for binance ETHUSDT).")
     log()
     header_cols = [
         "Date",
@@ -474,7 +584,7 @@ def main() -> int:
         f"{min(p_eq_1_vals):.2f}% - {max(p_eq_1_vals):.2f}%  (span {p_eq_1_span:.2f} pp)"
     )
     if p_eq_1_span > 15.0:
-        log("  WARN: span > 15 pp -- ETHUSDT spread regime is non-stationary across the year.")
+        log(f"  WARN: span > 15 pp -- {VENUE_LABEL} spread regime is non-stationary across the year.")
     else:
         log("  OK: span <= 15 pp -- spread regime is reasonably consistent across dates.")
 
@@ -482,7 +592,7 @@ def main() -> int:
     log()
     log("Interpretation guidance (decision belongs to the human reader):")
     log()
-    log("  P(spread == 1 tick) interpretation for ETHUSDT spot:")
+    log(f"  P(spread == 1 tick) interpretation for {VENUE_LABEL}:")
     log("    > 95%   -> severe degeneracy; pair-switch strongly recommended")
     log("    80-95%  -> marginal; possibly usable with documented caveats")
     log("    60-80%  -> acceptable; quote-placement is a meaningful decision")
@@ -490,7 +600,7 @@ def main() -> int:
     log()
     log("  Cross-date consistency check:")
     log("    If P(spread == 1 tick) varies by more than 15 pp across the 3 dates,")
-    log("    the ETHUSDT spread regime itself is non-stationary across the year")
+    log(f"    the {VENUE_LABEL} spread regime itself is non-stationary across the year")
     log("    -- flag this as a finding for the thesis writeup.")
 
     log()

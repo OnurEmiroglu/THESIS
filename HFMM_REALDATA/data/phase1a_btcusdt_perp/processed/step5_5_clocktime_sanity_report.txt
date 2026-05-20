@@ -1,0 +1,85 @@
+Step 5.5 clock-time resampled spread sanity report
+Generated  : 2026-05-20T15:55:38.617631+00:00
+Dates      : 2024-03-01, 2024-06-01, 2024-09-01
+Cadences   : raw + 100ms, 500ms, 1000ms
+Profile    : btcusdt_perp  (Binance Futures BTCUSDT (perp))
+Tick size  : 0.1 USDT  (documented venue tick; see 02_sample_inspect.py for per-date diagnostic)
+   (documented tick must match the tick verified in 02; see processed/step5_inspection_report.txt for the per-date diagnostic.)
+
+======================================================================
+DATE: 2024-03-01
+======================================================================
+  source                : binance-futures_book_snapshot_5_BTCUSDT_20240301.csv.gz
+  raw rows              : 1,408,663
+  after NaN drop        : 1,408,663
+  after crossed/zero    : 1,408,663
+
+=== 2024-03-01 ===
+
+| Cadence | Grid points | Used | Round->0 | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks |
+|---------|-------------|------|----------|------------------|--------------------|--------------|-----------|
+| raw (Step 5) | - | 1,408,663 | 0 |  99.43% |  99.55% | 1.0 | 1.0 |
+| 100ms | 863,987 | 863,987 | 0 |  99.55% |  99.64% | 1.0 | 1.0 |
+| 500ms | 172,798 | 172,798 | 0 |  99.58% |  99.67% | 1.0 | 1.0 |
+| 1000ms | 86,399 | 86,399 | 0 |  99.56% |  99.65% | 1.0 | 1.0 |
+
+======================================================================
+DATE: 2024-06-01
+======================================================================
+  source                : binance-futures_book_snapshot_5_BTCUSDT_20240601.csv.gz
+  raw rows              : 1,134,184
+  after NaN drop        : 1,134,184
+  after crossed/zero    : 1,134,184
+
+=== 2024-06-01 ===
+
+| Cadence | Grid points | Used | Round->0 | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks |
+|---------|-------------|------|----------|------------------|--------------------|--------------|-----------|
+| raw (Step 5) | - | 1,134,184 | 0 |  99.90% |  99.92% | 1.0 | 1.0 |
+| 100ms | 863,982 | 863,982 | 0 |  99.93% |  99.95% | 1.0 | 1.0 |
+| 500ms | 172,797 | 172,797 | 0 |  99.94% |  99.96% | 1.0 | 1.0 |
+| 1000ms | 86,399 | 86,399 | 0 |  99.94% |  99.95% | 1.0 | 1.0 |
+
+======================================================================
+DATE: 2024-09-01
+======================================================================
+  source                : binance-futures_book_snapshot_5_BTCUSDT_20240901.csv.gz
+  raw rows              : 1,303,118
+  after NaN drop        : 1,303,118
+  after crossed/zero    : 1,303,118
+
+=== 2024-09-01 ===
+
+| Cadence | Grid points | Used | Round->0 | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks |
+|---------|-------------|------|----------|------------------|--------------------|--------------|-----------|
+| raw (Step 5) | - | 1,303,118 | 0 |  99.43% |  99.51% | 1.0 | 1.0 |
+| 100ms | 863,990 | 863,990 | 0 |  99.56% |  99.62% | 1.0 | 1.0 |
+| 500ms | 172,798 | 172,798 | 0 |  99.58% |  99.63% | 1.0 | 1.0 |
+| 1000ms | 86,399 | 86,399 | 0 |  99.61% |  99.67% | 1.0 | 1.0 |
+
+======================================================================
+CROSS-DATE SUMMARY: P(spread = 1 tick) by cadence
+======================================================================
+
+| Cadence | 2024-03-01 | 2024-06-01 | 2024-09-01 |
+|---------|------------|------------|------------|
+| raw |  99.43% |  99.90% |  99.43% |
+| 100ms |  99.55% |  99.93% |  99.56% |
+| 500ms |  99.58% |  99.94% |  99.58% |
+| 1000ms |  99.56% |  99.94% |  99.61% |
+
+Interpretation guidance (decision belongs to the human reader):
+
+  If P(spread=1 tick) remains > 95% across ALL cadences (raw, 100ms,
+    500ms, 1000ms) for ALL 3 dates:
+    -> Binance Futures BTCUSDT (perp) is unsuitable for spread-based MM RL regardless
+       of discretization. Venue pivot is fully justified.
+
+  If P(spread=1 tick) drops below 80% at any cadence:
+    -> Binance Futures BTCUSDT (perp) may still be viable with appropriate discretization.
+       Reconsider pivot decision; document the discretization-degeneracy
+       tradeoff.
+
+  If degeneracy stays in the 80-95% band:
+    -> Marginal; document this in methodology and let downstream
+       decisions drive the choice.

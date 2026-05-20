@@ -1,0 +1,246 @@
+Step 5 sample inspection report
+Generated  : 2026-05-20T12:21:30.173381+00:00
+Manifest   : C:\Users\onure\Desktop\THESIS\HFMM_REALDATA\data\phase1a_btcusdt_perp\raw\_manifest.json
+Dates      : 2024-03-01, 2024-06-01, 2024-09-01
+Raw dir    : C:\Users\onure\Desktop\THESIS\HFMM_REALDATA\data\phase1a_btcusdt_perp\raw
+Proc dir   : C:\Users\onure\Desktop\THESIS\HFMM_REALDATA\data\phase1a_btcusdt_perp\processed
+
+======================================================================
+DATE: 2024-03-01
+======================================================================
+
+--- (a) L2 file inspection [2024-03-01] ---
+  file       : binance-futures_incremental_book_L2_BTCUSDT_20240301.csv.gz
+  cols used  : local_timestamp, is_snapshot  (ordering = local_timestamp)
+  total rows                       : 127,800,787
+  snapshot rows (is_snapshot=True) : 7,216
+  non-snapshot rows                : 127,793,571
+  first local_timestamp (UTC)      : 2024-03-01T00:00:01.321737+00:00
+  last  local_timestamp (UTC)      : 2024-03-01T23:59:59.980509+00:00
+  span (s)                         : 86398.7
+  inter-update interval (ms)       :
+    p25 = 0.000  p50 = 0.000  p75 = 0.000
+    p95 = 0.000  p99 = 50.951
+
+--- (b) Trades file inspection [2024-03-01] ---
+  file       : binance-futures_trades_BTCUSDT_20240301.csv.gz
+  total trades        : 4,242,506
+  total volume (BTC)  : 299,228.6460
+  mean trade size     : 0.070531 BTC
+  first ts (UTC)      : 2024-03-01T00:00:00.024934+00:00
+  last  ts (UTC)      : 2024-03-01T23:59:59.874535+00:00
+  span (s)            : 86399.8
+  trades/sec overall  : 49.10
+  trades/sec p50      : 23.00  (1s buckets)
+  trades/sec p95      : 170.00  (1s buckets)
+  gaps > 1 s          : count = 1976
+  largest gap (s)     : 3.304
+
+--- (c) Tick size verification [2024-03-01] ---
+  source        : binance-futures_book_snapshot_5_BTCUSDT_20240301.csv.gz
+  rationale     : tick size is enforced at the quote (book) level;
+                  trade prints can VWAP/aggregate and mask the grid.
+  resolved cols : asks[0].price, bids[0].price
+  scale         : x1e8 integer (Binance prices have <= 8 decimals,
+                  so this is lossless and avoids float-GCD drift)
+  distinct >0 prices: 21,266
+  gcd estimate (USDT)      : 0.1
+  min-diff estimate (USDT) : 0.03
+  estimates agree          : False
+  documented Binance Futures BTCUSDT (perp) tick: 0.1 USDT
+  inferred vs documented   : False
+  WARN: gcd != min-diff -- inspect distinct price grid manually.
+  ============================================================
+  LOUD WARN: inferred tick disagrees with documented venue tick
+  ------------------------------------------------------------
+    documented : 0.1 USDT  (Binance Futures BTCUSDT (perp))
+    gcd        : 0.1 USDT
+    min-diff   : 0.03 USDT
+    interpretation : off-grid prices in this date's data
+                     (likely Tardis reconstructor or fp64
+                     artifact); not a venue tick-regime change.
+    PROCEEDING with documented tick = 0.1 USDT.
+  ============================================================
+
+--- (d) Top-of-book spread analysis [2024-03-01] ---
+  source         : binance-futures_book_snapshot_5_BTCUSDT_20240301.csv.gz
+  tick size used : 0.1  USDT  (documented venue tick; see (c) for diagnostic)
+  raw rows                    : 1,408,663
+  dropped (NaN top-of-book)   : 0
+  dropped (crossed/zero/etc)  : 0
+  valid rows used             : 1,408,663
+  rounding policy             : np.round (banker's, half-to-even) on spread / tick
+  rounded to 0 ticks          : 0  (sub-tick: impossible spread, off-grid artifact)
+  rounded to 1 tick           : 1,400,649
+  rounded to > 1 tick         : 8,014
+  P(spread == 1 tick)         : 99.43%
+  P(spread <= 2 ticks)        : 99.55%
+  spread distribution (ticks) :
+    p25 = 1.0  p50 = 1.0  p75 = 1.0
+    p90 = 1.0  p95 = 1.0  p99 = 1.0  max = 485
+  histogram saved : spread_hist_20240301.png
+
+======================================================================
+DATE: 2024-06-01
+======================================================================
+
+--- (a) L2 file inspection [2024-06-01] ---
+  file       : binance-futures_incremental_book_L2_BTCUSDT_20240601.csv.gz
+  cols used  : local_timestamp, is_snapshot  (ordering = local_timestamp)
+  total rows                       : 43,804,103
+  snapshot rows (is_snapshot=True) : 2,355
+  non-snapshot rows                : 43,801,748
+  first local_timestamp (UTC)      : 2024-06-01T00:00:01.813372+00:00
+  last  local_timestamp (UTC)      : 2024-06-01T23:59:59.964864+00:00
+  span (s)                         : 86398.2
+  inter-update interval (ms)       :
+    p25 = 0.000  p50 = 0.000  p75 = 0.000
+    p95 = 0.000  p99 = 53.503
+
+--- (b) Trades file inspection [2024-06-01] ---
+  file       : binance-futures_trades_BTCUSDT_20240601.csv.gz
+  total trades        : 851,468
+  total volume (BTC)  : 50,943.0580
+  mean trade size     : 0.059830 BTC
+  first ts (UTC)      : 2024-06-01T00:00:00.142177+00:00
+  last  ts (UTC)      : 2024-06-01T23:59:59.913325+00:00
+  span (s)            : 86399.8
+  trades/sec overall  : 9.85
+  trades/sec p50      : 4.00  (1s buckets)
+  trades/sec p95      : 40.00  (1s buckets)
+  gaps > 1 s          : count = 15066
+  largest gap (s)     : 9.039
+
+--- (c) Tick size verification [2024-06-01] ---
+  source        : binance-futures_book_snapshot_5_BTCUSDT_20240601.csv.gz
+  rationale     : tick size is enforced at the quote (book) level;
+                  trade prints can VWAP/aggregate and mask the grid.
+  resolved cols : asks[0].price, bids[0].price
+  scale         : x1e8 integer (Binance prices have <= 8 decimals,
+                  so this is lossless and avoids float-GCD drift)
+  distinct >0 prices: 3,908
+  gcd estimate (USDT)      : 0.1
+  min-diff estimate (USDT) : 0.1
+  estimates agree          : True
+  documented Binance Futures BTCUSDT (perp) tick: 0.1 USDT
+  inferred vs documented   : True
+
+--- (d) Top-of-book spread analysis [2024-06-01] ---
+  source         : binance-futures_book_snapshot_5_BTCUSDT_20240601.csv.gz
+  tick size used : 0.1  USDT  (documented venue tick; see (c) for diagnostic)
+  raw rows                    : 1,134,184
+  dropped (NaN top-of-book)   : 0
+  dropped (crossed/zero/etc)  : 0
+  valid rows used             : 1,134,184
+  rounding policy             : np.round (banker's, half-to-even) on spread / tick
+  rounded to 0 ticks          : 0  (sub-tick: impossible spread, off-grid artifact)
+  rounded to 1 tick           : 1,133,002
+  rounded to > 1 tick         : 1,182
+  P(spread == 1 tick)         : 99.90%
+  P(spread <= 2 ticks)        : 99.92%
+  spread distribution (ticks) :
+    p25 = 1.0  p50 = 1.0  p75 = 1.0
+    p90 = 1.0  p95 = 1.0  p99 = 1.0  max = 362
+  histogram saved : spread_hist_20240601.png
+
+======================================================================
+DATE: 2024-09-01
+======================================================================
+
+--- (a) L2 file inspection [2024-09-01] ---
+  file       : binance-futures_incremental_book_L2_BTCUSDT_20240901.csv.gz
+  cols used  : local_timestamp, is_snapshot  (ordering = local_timestamp)
+  total rows                       : 99,540,679
+  snapshot rows (is_snapshot=True) : 2,001
+  non-snapshot rows                : 99,538,678
+  first local_timestamp (UTC)      : 2024-09-01T00:00:01.008613+00:00
+  last  local_timestamp (UTC)      : 2024-09-01T23:59:59.969557+00:00
+  span (s)                         : 86399.0
+  inter-update interval (ms)       :
+    p25 = 0.000  p50 = 0.000  p75 = 0.000
+    p95 = 0.000  p99 = 51.897
+
+--- (b) Trades file inspection [2024-09-01] ---
+  file       : binance-futures_trades_BTCUSDT_20240901.csv.gz
+  total trades        : 2,973,388
+  total volume (BTC)  : 222,909.9140
+  mean trade size     : 0.074968 BTC
+  first ts (UTC)      : 2024-09-01T00:00:00.003726+00:00
+  last  ts (UTC)      : 2024-09-01T23:59:59.996362+00:00
+  span (s)            : 86400.0
+  trades/sec overall  : 34.41
+  trades/sec p50      : 11.00  (1s buckets)
+  trades/sec p95      : 121.00  (1s buckets)
+  gaps > 1 s          : count = 5291
+  largest gap (s)     : 5.920
+
+--- (c) Tick size verification [2024-09-01] ---
+  source        : binance-futures_book_snapshot_5_BTCUSDT_20240901.csv.gz
+  rationale     : tick size is enforced at the quote (book) level;
+                  trade prints can VWAP/aggregate and mask the grid.
+  resolved cols : asks[0].price, bids[0].price
+  scale         : x1e8 integer (Binance prices have <= 8 decimals,
+                  so this is lossless and avoids float-GCD drift)
+  distinct >0 prices: 16,985
+  gcd estimate (USDT)      : 0.1
+  min-diff estimate (USDT) : 0.1
+  estimates agree          : True
+  documented Binance Futures BTCUSDT (perp) tick: 0.1 USDT
+  inferred vs documented   : True
+
+--- (d) Top-of-book spread analysis [2024-09-01] ---
+  source         : binance-futures_book_snapshot_5_BTCUSDT_20240901.csv.gz
+  tick size used : 0.1  USDT  (documented venue tick; see (c) for diagnostic)
+  raw rows                    : 1,303,118
+  dropped (NaN top-of-book)   : 0
+  dropped (crossed/zero/etc)  : 0
+  valid rows used             : 1,303,118
+  rounding policy             : np.round (banker's, half-to-even) on spread / tick
+  rounded to 0 ticks          : 0  (sub-tick: impossible spread, off-grid artifact)
+  rounded to 1 tick           : 1,295,639
+  rounded to > 1 tick         : 7,479
+  P(spread == 1 tick)         : 99.43%
+  P(spread <= 2 ticks)        : 99.51%
+  spread distribution (ticks) :
+    p25 = 1.0  p50 = 1.0  p75 = 1.0
+    p90 = 1.0  p95 = 1.0  p99 = 1.0  max = 1480
+  histogram saved : spread_hist_20240901.png
+
+======================================================================
+CROSS-DATE TICK REGIME CHECK
+======================================================================
+  2024-03-01: tick = 0.1
+  2024-06-01: tick = 0.1
+  2024-09-01: tick = 0.1
+  OK: identical tick size across all 3 dates.
+
+======================================================================
+FINAL SUMMARY
+======================================================================
+
+Spread is computed using the venue's documented tick (0.10 USDT for
+binance-futures BTCUSDT, 0.01 USDT for binance ETHUSDT).
+
+| Date | Rows used | P(spread=1 tick) | P(spread<=2 ticks) | Median ticks | P95 ticks | Trades/sec p50 | L2 interval p50 (ms) |
+|------|-----------|------------------|--------------------|--------------|-----------|----------------|----------------------|
+| 2024-03-01 | 1,408,663 | 99.43% | 99.55% | 1.0 | 1.0 | 23.00 | 0.000 |
+| 2024-06-01 | 1,134,184 | 99.90% | 99.92% | 1.0 | 1.0 | 4.00 | 0.000 |
+| 2024-09-01 | 1,303,118 | 99.43% | 99.51% | 1.0 | 1.0 | 11.00 | 0.000 |
+
+P(spread=1 tick) range across dates: 99.43% - 99.90%  (span 0.47 pp)
+  OK: span <= 15 pp -- spread regime is reasonably consistent across dates.
+
+Interpretation guidance (decision belongs to the human reader):
+
+  P(spread == 1 tick) interpretation for Binance Futures BTCUSDT (perp):
+    > 95%   -> severe degeneracy; pair-switch strongly recommended
+    80-95%  -> marginal; possibly usable with documented caveats
+    60-80%  -> acceptable; quote-placement is a meaningful decision
+    < 60%   -> good; healthy decision space
+
+  Cross-date consistency check:
+    If P(spread == 1 tick) varies by more than 15 pp across the 3 dates,
+    the Binance Futures BTCUSDT (perp) spread regime itself is non-stationary across the year
+    -- flag this as a finding for the thesis writeup.
+
+Report length: 3 dates  /  outputs in processed/
