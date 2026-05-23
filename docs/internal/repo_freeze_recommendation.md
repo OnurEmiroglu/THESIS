@@ -1,6 +1,6 @@
 # Repository Freeze Recommendation
 
-Historical note: this document was prepared for thesis_28/decisions_log_12. The current manuscript is thesis_29 and current decision log is decisions_log_13. Most evidence mappings remain valid unless superseded by post-hoc diagnostics.
+**Freshness anchor (last updated 2026-05-22):** This document was prepared for thesis_28 / decisions_log_12. The current canonical frozen artifacts are thesis_29.pdf (tag thesis-v29-frozen, commit 9681faa) and decisions_log_13.pdf. Most evidence mappings remain valid unless superseded by post-hoc diagnostics. Body text below preserves the thesis_28 / decisions_log_12 references as historical provenance unless updated inline (reference-type docs).
 
 Purpose: define what should be frozen for defense, what may safely change, and what must not be regenerated. This file also records the final repo sanity scan requested for the defense-readiness audit.
 
@@ -8,8 +8,8 @@ Purpose: define what should be frozen for defense, what may safely change, and w
 
 | Scope | Freeze status | Rationale |
 |---|---|---|
-| `manuscript/thesis_28.pdf` and `manuscript/thesis_28.docx` | Freeze | Final thesis artifact. Do not regenerate unless explicitly creating a new thesis version. |
-| `manuscript/decisions_log_12.pdf` and `manuscript/decisions_log_12.docx` | Freeze | Final decision record including audit-remediation Decisions #48-#51. |
+| `manuscript/thesis_29.pdf` and `manuscript/thesis_29.docx` | Freeze | Final thesis artifact. Do not regenerate unless explicitly creating a new thesis version. |
+| `manuscript/decisions_log_13.pdf` and `manuscript/decisions_log_13.docx` | Freeze | Final decision record including audit-remediation Decisions #48-#51. |
 | `EVIDENCE_MANIFEST.md` | Freeze | Canonical audit-remediation manifest committed at `045ee86`. |
 | `docs/internal/project_full_notes_13may.md` | Freeze after review/commit | Consolidated project brain for defense/upload context. |
 | `docs/internal/codebase_snapshot.py` | Freeze after review/commit | Single-file code context snapshot; update only if active code changes. |
@@ -53,8 +53,8 @@ Purpose: define what should be frozen for defense, what may safely change, and w
 
 | Output | Reason |
 |---|---|
-| `manuscript/thesis_28.*` | Final thesis artifact. |
-| `manuscript/decisions_log_12.*` | Final decision artifact. |
+| `manuscript/thesis_29.*` | Final thesis artifact. |
+| `manuscript/decisions_log_13.*` | Final decision artifact. |
 | Protected CSV set in `EVIDENCE_MANIFEST.md` | Hash-protected audit evidence. |
 | `docs/internal/wp6_sweep_full/summary_*.csv` | Protected summaries; WP6 plot scripts overwrite them. |
 | `docs/internal/wp6_sweep_full/plots/*` | Current thesis Chapter 5 figures. |
@@ -68,8 +68,8 @@ Back up the following outside the repo before defense:
 
 | Item | Why |
 |---|---|
-| `manuscript/thesis_28.pdf` and `.docx` | Final deliverable. |
-| `manuscript/decisions_log_12.pdf` and `.docx` | Audit/decision provenance. |
+| `manuscript/thesis_29.pdf` and `.docx` | Final deliverable. |
+| `manuscript/decisions_log_13.pdf` and `.docx` | Audit/decision provenance. |
 | `EVIDENCE_MANIFEST.md` | Protected evidence map. |
 | `docs/internal/project_full_notes_13may.md` | High-density defense/project memory. |
 | `docs/internal/codebase_snapshot.py` | Single-file code context. |
@@ -82,7 +82,7 @@ Back up the following outside the repo before defense:
 
 | Evidence | Use in advisor/committee discussion |
 |---|---|
-| `manuscript/thesis_28.pdf` | Primary thesis text. |
+| `manuscript/thesis_29.pdf` | Primary thesis text. |
 | `docs/internal/project_full_notes_13may.md` | Compact map of all final results and caveats. |
 | `EVIDENCE_MANIFEST.md` | Audit/remediation and protected artifact guarantees. |
 | `docs/internal/defense_claim_matrix.md` | Claim-by-claim evidence trace. |

@@ -1,6 +1,6 @@
 # Figure Provenance Audit
 
-Historical note: this document was prepared for thesis_28/decisions_log_12. The current manuscript is thesis_29 and current decision log is decisions_log_13. Most evidence mappings remain valid unless superseded by post-hoc diagnostics.
+**Freshness anchor (last updated 2026-05-22):** This document was prepared for thesis_28 / decisions_log_12. The current canonical frozen artifacts are thesis_29.pdf (tag thesis-v29-frozen, commit 9681faa) and decisions_log_13.pdf. Most evidence mappings remain valid unless superseded by post-hoc diagnostics. Body text below preserves the thesis_28 / decisions_log_12 references as historical provenance unless updated inline (reference-type docs).
 
 Purpose: trace every major figure embedded in `manuscript/thesis_28.pdf` to its generating script, source data, run IDs, and regeneration status. This is a documentation-only audit; figures were not regenerated.
 

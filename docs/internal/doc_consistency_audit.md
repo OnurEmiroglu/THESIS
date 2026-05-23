@@ -1,5 +1,7 @@
 # Freshness Audit
 
+**Freshness anchor (last updated 2026-05-22):** This document was prepared for thesis_28 / decisions_log_12. The current canonical frozen artifacts are thesis_29.pdf (tag thesis-v29-frozen, commit 9681faa) and decisions_log_13.pdf. Most evidence mappings remain valid unless superseded by post-hoc diagnostics. Body text below preserves the thesis_28 / decisions_log_12 references as historical provenance unless updated inline (reference-type docs).
+
 Scope: documentation consistency and freshness audit across `README.md`, `CLAUDE.md`, `docs/internal/project_full_notes_13may.md`, `manuscript/thesis_28.pdf`, `manuscript/decisions_log_12.pdf`, and `EVIDENCE_MANIFEST.md`.
 
 Canonical current state used for this audit:
