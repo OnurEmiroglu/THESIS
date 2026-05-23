@@ -1,14 +1,14 @@
 # Figure Provenance Audit
 
-**Freshness anchor (last updated 2026-05-22):** This document was prepared for thesis_28 / decisions_log_12. The current canonical frozen artifacts are thesis_29.pdf (tag thesis-v29-frozen, commit 9681faa) and decisions_log_13.pdf. Most evidence mappings remain valid unless superseded by post-hoc diagnostics. Body text below preserves the thesis_28 / decisions_log_12 references as historical provenance unless updated inline (reference-type docs).
+**Freshness anchor (last updated 2026-05-22):** This document was prepared for thesis_28 / decisions_log_12. The current canonical frozen artifacts are thesis_29.pdf (tag thesis-v29-frozen, commit 9681faa) and decisions_log_13.pdf. Most evidence mappings remain valid unless superseded by post-hoc diagnostics. Body text below preserves the thesis_28 / decisions_log_12 references as historical provenance unless updated inline (reference-type docs). Exception: lines stating the current canonical generator (e.g. L7, L11, L30) are treated as current-state assertions and have been updated inline to gen_thesis_29.py; the audit observations preserved as historical provenance start from L31 onward.
 
 Purpose: trace every major figure embedded in `manuscript/thesis_28.pdf` to its generating script, source data, run IDs, and regeneration status. This is a documentation-only audit; figures were not regenerated.
 
-Primary thesis insertion map: `scripts/gen_thesis_28.py`.
+Primary thesis insertion map: `scripts/gen_thesis_29.py`.
 
 ## Summary
 
-| Figure | Thesis section / caption summary | Image path embedded by `gen_thesis_28.py` | Generating script | Source CSV(s) | Source run ID(s) | Reproducible now? | Protected artifact dependency? | Legacy dependency? | Provenance assessment |
+| Figure | Thesis section / caption summary | Image path embedded by `gen_thesis_29.py` | Generating script | Source CSV(s) | Source run ID(s) | Reproducible now? | Protected artifact dependency? | Legacy dependency? | Provenance assessment |
 |---|---|---|---|---|---|---|---|---|---|
 | Figure 1 | OOS performance summary: Sharpe and inventory risk | `results/plots/thesis/fig1_sharpe_inv.png` | `src/wp5/figure_thesis.py` | `results/runs/20260228-093733_seed1_wp5-eval-main_3e8eacc/metrics_wp5_oos.csv` | `20260228-093733_seed1_wp5-eval-main_3e8eacc` | Yes, from frozen CSV using active script; do not regenerate unless explicitly approved | No | No | Clear. Script header declares ownership of Fig 1-5. |
 | Figure 2 | Seed-paired PPO-aware vs PPO-blind comparison | `results/plots/thesis/fig2_paired_seed.png` | `src/wp5/figure_thesis.py` | `results/runs/20260228-093733_seed1_wp5-eval-main_3e8eacc/metrics_wp5_oos.csv` | `20260228-093733_seed1_wp5-eval-main_3e8eacc` | Yes, from frozen CSV using active script; do not regenerate unless explicitly approved | No | No | Clear. P-values are hardcoded visual annotations matching thesis values. |
@@ -27,7 +27,7 @@ Primary thesis insertion map: `scripts/gen_thesis_28.py`.
 
 | Generator | Status | Notes |
 |---|---|---|
-| `scripts/gen_thesis_28.py` | Active current thesis generator | Embeds current figure files and saves `manuscript/thesis_28.docx`. Do not run for this audit. |
+| `scripts/gen_thesis_29.py` | Active current thesis generator | Embeds current figure files and saves `manuscript/thesis_29.docx`. Do not run for this audit. |
 | `src/wp5/figure_thesis.py` | Active figure script for thesis Figures 1, 2, 5, 6, 7 as embedded file paths | Header explicitly states ownership of `fig1`-`fig5` output filenames and WP6 exclusion. |
 | `src/wp5/figure_thesis_23.py` | Active figure script for thesis Figures 3, 4, 8, 9 via preserved `thesis_23` filenames | The `_23` suffix is historical but intentionally retained for appendix/file-index stability. |
 | `scripts/wp6_plot1_monotonic_gap.py` | Active WP6 plot/stat script | Regenerates both plot and protected summary CSV. Treat as frozen unless explicitly approved. |

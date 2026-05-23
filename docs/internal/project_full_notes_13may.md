@@ -356,7 +356,7 @@ Observed: gap does not narrow in the expected direction. `sigma_only` remains st
 
 ## 11. Audit & Remediation Summary
 
-Canonical audit-remediation record: `manuscript/decisions_log_12.pdf` and `EVIDENCE_MANIFEST.md`.
+Canonical audit-remediation record: `manuscript/decisions_log_13.pdf` and `EVIDENCE_MANIFEST.md`.
 
 ### 11.1 Lane A - Audit Interpretation and Scientific Clarification
 
@@ -470,12 +470,12 @@ Use this 25-file set for the ChatGPT project folder. The purpose is not to repro
 | Rank | File path | Why this file is needed | Category |
 |---:|---|---|---|
 | 1 | `docs/internal/project_full_notes_13may.md` | Consolidated project brain with final results, p-values, caveats, audit state, and upload logic. | Master context |
-| 2 | `manuscript/thesis_28.pdf` | Latest thesis manuscript as defended/read by humans. | Manuscript |
-| 3 | `manuscript/decisions_log_12.pdf` | Latest decisions log including audit-remediation Decisions #48-#51. | Decision log |
+| 2 | `manuscript/thesis_29.pdf` | Latest thesis manuscript as defended/read by humans. | Manuscript |
+| 3 | `manuscript/decisions_log_13.pdf` | Latest decisions log including audit-remediation Decisions #48-#51. | Decision log |
 | 4 | `EVIDENCE_MANIFEST.md` | Defense-grade manifest for protected artifacts, invariants, and remediation commits. | Audit manifest |
 | 5 | `README.md` | Project overview, research question, command entry points, and key results; note stale manuscript markers. | Project guide |
 | 6 | `CLAUDE.md` | Architecture, work-package, command, and coding guidance for AI/code context; note stale manuscript markers. | Project guide |
-| 7 | `scripts/gen_thesis_28.py` | Active thesis generator corresponding to the latest manuscript. | Manuscript generation |
+| 7 | `scripts/gen_thesis_29.py` | Active thesis generator corresponding to the latest manuscript. | Manuscript generation |
 | 8 | `run.py` | Main config-driven dispatcher for all jobs. | Infrastructure |
 | 9 | `src/run_context.py` | Run directories, config snapshots, metadata, CSVMetricLogger, resume guards. | Infrastructure |
 | 10 | `src/wp1/sim.py` | Core simulator: mid dynamics, Poisson fills, fees, latency, inventory state. | Active code |
