@@ -119,7 +119,7 @@ Warning: do not regenerate thesis figures, WP6 plots/summaries, protected CSVs, 
   - `q_norm = clip(inv, -inv_max_clip, inv_max_clip) / inv_max_clip`
   - `sigma_hat`: rolling realized volatility from exogenous series (0.0 if unavailable)
   - `tau = (n_steps - t) / n_steps`
-  - regime one-hot: zeros if `use_regime=False`; during warmup, `regime_hat=="warmup"` is treated as `"M"` producing `[0,1,0]` (see known limitation below)
+  - regime one-hot: see **Regime channel (canonical)** bullet below for exact mapping
 - **Action space:** `MultiDiscrete([5, 5])`
   - `h_idx in {0..4}` -> `h = h_idx + 1` (half-spread ticks: 1..5)
   - `m_idx in {0..4}` -> `m = m_idx - 2` (skew: -2..2)
@@ -127,7 +127,9 @@ Warning: do not regenerate thesis figures, WP6 plots/summaries, protected CSVs, 
 - **Reward:** `R_t = (W_{t+1} - W_t) - eta * inv_{t+1}^2`
   - Fee already deducted in sim cash update -- do NOT subtract again (double-count)
 - **Exogenous series:** inject via `reset(options={"exog": df})` with columns `mid, sigma_hat, regime_hat`
-- **Warmup behavior (known limitation):** during warmup, exog sigma_hat is NaN so `sh=0.0`, but regime_hat defaults to `"M"` (not a valid L/M/H label but treated as M in `_get_obs`), producing one-hot `[0,1,0]` rather than a zero vector. This means warmup steps receive a non-zero regime signal even though no detection has occurred yet. Documented as a known limitation.
+- **Regime channel (canonical):** Regime one-hot is constructed by exact label match: `"L"` → `[1,0,0]`, `"M"` → `[0,1,0]`, `"H"` → `[0,0,1]`. All other cases produce a zero one-hot `[0,0,0]`: warmup steps (insufficient RV history), invalid or NaN labels, and any variant where `regime_source == "none"` (e.g. `sigma_only` / blind variant). Warmup is deliberately NOT mapped to the medium regime; mapping warmup to `[0,1,0]` was considered and rejected during WP3 design (see inline comment at `src/wp3/env.py:100`, "M'ye map etme") to avoid injecting an artificial "medium regime" signal into observations before sufficient volatility history accumulates.
+
+  The four variants that consume the regime channel — `regime_only`, `combined`, `oracle_full`, `oracle_pure` — set `regime_source` to `"hat"` or `"true"`; `sigma_only` is the sole variant with `regime_source == "none"` (legacy `use_regime=False`; retained as backward-compat shim per `src/wp3/env.py:47-53`).
 
 ### Regime detection (`src/wp2/synth_regime.py`)
 

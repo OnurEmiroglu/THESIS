@@ -427,7 +427,7 @@ No-arg behavior invariant: active path-parameterization fixes were designed so a
 | Regime labels may matter elsewhere | The claim is conditional: explicit labels add little when `sigma_hat` is already available in this observation design. |
 | WP4 in-sample evaluation | WP4 is infrastructure/pilot only; do not cite it for reported OOS PPO performance. |
 | Dwell filter causality | `rv_dwell` is auxiliary/offline detector comparison; main reported pipelines use causal `rv_baseline`. |
-| WP3 warmup observation | During warmup, unavailable `sigma_hat` maps to 0.0 and warmup regime handling can produce a medium one-hot signal; documented limitation. |
+| WP3 warmup observation | During warmup, exog sigma_hat is NaN so sh=0.0, and the regime label is "warmup" which does not match L/M/H — therefore the regime one-hot remains [0,0,0]. This is the canonical observation design (see CLAUDE.md). |
 | WP6 noisy calibration | Small noisy-only scale issue documented; no rerun; does not change protected evidence. |
 | WP6 mechanism | "Categorical-channel degradation" is descriptive, not a proven mechanism. Avoid claiming representation-level causality. |
 | WP6 equivalence vs `regime_only` | Formal TOST equivalence at delta=0.05 is not established; use conservative mean-indistinguishability language. |
