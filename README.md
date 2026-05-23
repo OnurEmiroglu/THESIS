@@ -4,7 +4,7 @@ KIT Financial Engineering MSc Thesis
 
 ## Research Question
 Does a regime-aware PPO market-making agent outperform a regime-blind PPO agent?
-Final finding: signal redundancy. In the tested synthetic HFMM setting, PPO learns strong risk-adjusted quoting, but explicit regime labels do not robustly improve performance beyond the continuous `sigma_hat` signal already available to the policy. TOST equivalence is confirmed (±0.10 bound, p=0.00067, 90% CI [−0.001, +0.063], 95% CI [−0.008, +0.069]). The result holds across detector robustness checks (ANOVA p=0.997), reward shaping (p=0.0016 favoring sigma_only), and model misspecification (TOST ±0.05, p=0.042, 90% CI [−0.040, +0.048]).
+Final finding: signal redundancy. In the tested synthetic HFMM setting, PPO learns strong risk-adjusted quoting, but explicit regime labels do not robustly improve performance beyond the continuous `sigma_hat` signal already available to the policy. TOST equivalence is established at the ±0.10 bound (p=0.00067, 90% CI [−0.001, +0.063], 95% CI [−0.008, +0.069]). The result holds across detector robustness checks (ANOVA p=0.997), reward shaping (p=0.0016 favoring sigma_only), and model misspecification (TOST ±0.05, p=0.042, 90% CI [−0.040, +0.048]).
 
 These are controlled synthetic-market claims, not live-market deployment claims.
 Post-hoc signal redundancy diagnostics are retained as supporting interpretive diagnostics only: they help explain why the frozen WP5/WP6 evidence is consistent with signal redundancy, but they are not mechanistic proof and they do not replace the primary experiment evidence.
