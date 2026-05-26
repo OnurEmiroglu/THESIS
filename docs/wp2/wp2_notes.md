@@ -97,3 +97,11 @@ Pilot results (3 seeds, mean sharpe_like):
 - hmm:         aware=0.713, blind=0.814
 
 Full experiment: 3 detectors x 20 seeds currently running (w5_detector_full.json)
+
+## Disk Outputs (Provenance Note)
+
+`data/processed/wp2_synth.csv` is a convenience alias / latest snapshot. It is overwritten on every WP2 run and is not frozen evidence.
+
+`ctx.run_dir/wp2_synth.csv` is the per-run frozen provenance artifact referenced for canonical reproduction.
+
+For canonical `thesis_29` WP2 claims, use run-specific frozen copies under `results/runs/<run_id>/`, not `data/processed/`.

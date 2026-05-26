@@ -259,6 +259,7 @@ def assign_regime_hat_hmm(
 # Active downstream pipelines consume the returned dataframe, not the disk CSVs.
 # Disk outputs are artifacts:
 #   - data/processed/wp2_synth.csv is the latest convenience snapshot / backward-compatible alias.
+#     It is NOT a frozen evidence artifact and is not audit-traceable; the frozen provenance copy is ctx.run_dir/wp2_synth.csv.
 #   - ctx.run_dir/wp2_synth.csv is the provenance artifact for a specific run.
 #   - ctx.run_dir/wp2_synth_snapshot.csv is kept as the legacy per-run alias.
 def run_wp2(
