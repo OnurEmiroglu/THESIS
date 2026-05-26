@@ -152,3 +152,13 @@ argümanının ötesine geçilerek "fark pratik olarak ihmal edilebilir aralıkt
 ifadesi kullanılabilir hale geldi. Paper için güçlü istatistiksel zemin.
 
 Current manuscript: thesis_25.docx / thesis_25.pdf, decisions_log_8.docx / decisions_log_8.pdf.
+
+## Canonical Rerun Warning
+
+Canonical WP5 evidence is frozen under the run directories and protected artifacts referenced by EVIDENCE_MANIFEST.md. Do not rerun WP5 evaluation or figure scripts from HEAD and treat the newly produced outputs as canonical thesis_29 evidence.
+
+Reruns are acceptable only for:
+- pilot/exploration experiments outside the canonical claim chain
+- reproducibility verification against frozen CSV hashes
+
+Canonical thesis_29 claims should reference the frozen artifacts directly.

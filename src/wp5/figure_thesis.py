@@ -1,4 +1,9 @@
 # WARNING: This script may overwrite frozen thesis/evidence outputs. Do not run before defense unless a new approved version is being created.
+# WARNING: Canonical WP5 results are frozen artifacts under results/runs/<run_id> as documented in EVIDENCE_MANIFEST.md.
+# Do not rerun this script from HEAD and treat the output as canonical thesis_29 evidence; doing so will produce a new
+# run snapshot that may not match the frozen reference and may invalidate downstream provenance trails. Reruns are
+# acceptable only for pilot/exploration work or reproducibility verification against frozen CSV hashes; they must not
+# replace frozen artifacts.
 """Generate thesis figures from WP5 OOS results."""
 # Thesis figure script — main figure suite (Fig 1–5).
 # ---------------------------------------------------

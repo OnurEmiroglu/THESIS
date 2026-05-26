@@ -6,6 +6,12 @@
 # combined, oracle_pure, oracle_full.
 # Sonuçlar: metrics_wp5_oos.csv ve metrics_wp5_oos_by_regime.csv
 
+# WARNING: Canonical WP5 results are frozen artifacts under results/runs/<run_id> as documented in EVIDENCE_MANIFEST.md.
+# Do not rerun this script from HEAD and treat the output as canonical thesis_29 evidence; doing so will produce a new
+# run snapshot that may not match the frozen reference and may invalidate downstream provenance trails. Reruns are
+# acceptable only for pilot/exploration work or reproducibility verification against frozen CSV hashes; they must not
+# replace frozen artifacts.
+
 from __future__ import annotations
 
 import copy
