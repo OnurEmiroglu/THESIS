@@ -57,6 +57,14 @@ def _replace_text(para: Paragraph, text: str) -> None:
         para.add_run(text)
 
 
+def _replace_in_paragraph(para: Paragraph, old_text: str, new_text: str) -> bool:
+    full_text = "".join(run.text for run in para.runs)
+    if old_text not in full_text:
+        return False
+    _replace_text(para, full_text.replace(old_text, new_text))
+    return True
+
+
 def _fix_mojibake(text: str) -> str:
     replacements = {
         "LÄ°TERATÃœR TARAMASI": "LİTERATÜR TARAMASI",
@@ -142,6 +150,13 @@ def _renumber_existing_headings(doc: Document) -> None:
             suffix = match.group(2)
             title = match.group(3)
             _replace_text(para, f"{chapter + 1}.{suffix} {title}")
+
+
+def _update_version_label(doc: Document) -> None:
+    for para in doc.paragraphs:
+        if _replace_in_paragraph(para, "Mayıs 2026 — Sürüm 29", "Mayıs 2026 — Sürüm 30"):
+            return
+    raise RuntimeError("Version label not found")
 
 
 def _revise_introduction(doc: Document) -> None:
@@ -277,6 +292,7 @@ def main() -> None:
         raise FileNotFoundError(SRC)
     shutil.copy2(SRC, DST)
     doc = Document(DST)
+    _update_version_label(doc)
     _revise_introduction(doc)
     _renumber_existing_headings(doc)
     _insert_literature_review(doc)

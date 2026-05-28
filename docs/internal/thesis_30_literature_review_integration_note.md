@@ -18,6 +18,7 @@ Scope: thesis draft strengthening only. No experiments were run, no WP5/WP6 figu
 
 - `scripts/gen_thesis_30.py`
 - `manuscript/thesis_30.docx`
+- `manuscript/thesis_30.pdf`
 - `docs/internal/thesis_30_literature_review_integration_note.md`
 
 ## Structural Changes
