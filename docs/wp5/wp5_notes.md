@@ -149,7 +149,7 @@ bunu "fark pratik olarak ihmal edilebilir" olarak aktif kanıtlamaya dönüştü
 
 Yorum: İki ortamda da TOST eşdeğerliği kanıtlandı. "p > 0.05 = fark yok" zayıf
 argümanının ötesine geçilerek "fark pratik olarak ihmal edilebilir aralıkta"
-ifadesi kullanılabilir hale geldi. Paper için güçlü istatistiksel zemin.
+ifadesi kullanılabilir hale geldi. Tez için güçlü istatistiksel zemin.
 
 Current manuscript: thesis_25.docx / thesis_25.pdf, decisions_log_8.docx / decisions_log_8.pdf.
 

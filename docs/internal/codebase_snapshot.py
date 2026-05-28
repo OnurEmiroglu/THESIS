@@ -2,7 +2,7 @@
 # This file is a read-only upload-context artifact; do not execute it.
 # Project: High-Frequency Market Making via Reinforcement Learning under Different Volatility Regimes.
 # Contents: active Python pipeline/support/audit/provenance files only.
-# Excludes: scripts/legacy, generated result artifacts, virtualenv/cache/build files, raw data, manuscript outputs, HFMM_REALDATA, and config JSONs consolidated separately in docs/internal/config_snapshot_all.md.
+# Excludes: scripts/legacy, generated result artifacts, virtualenv/cache/build files, raw data, manuscript outputs, and config JSONs consolidated separately in docs/internal/config_snapshot_all.md.
 # Format: each block records FILE, PURPOSE, and STATUS before full file contents.
 
 # ============================================================

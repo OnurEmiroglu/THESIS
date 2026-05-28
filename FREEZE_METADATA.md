@@ -1,9 +1,9 @@
 # Thesis-v29 Freeze Metadata
 
 This file records the canonical baseline state of the synthetic-market
-thesis repository after full audit closure. Post-thesis work — including
-the real-data extension and any paper-direction follow-up — branches from
-this baseline.
+thesis repository after full audit closure. Subsequent work in this repository
+is limited to thesis-draft revision, literature-review improvement, and
+documentation cleanup unless a separate direction is explicitly approved.
 
 ## Freeze coordinates
 
@@ -32,10 +32,6 @@ this baseline.
 
 ## How to use this anchor
 
-When starting post-thesis work, branch from this tag:
-
-    git checkout -b <branch-name> thesis-v29-frozen
-
-When citing the frozen baseline in a paper or follow-up document, refer
-to the tag name rather than a commit hash — the tag is the immutable
-handle.
+This tag is retained as a historical reference point for the thesis_29 baseline.
+New thesis drafts may be developed from `main` using new version numbers
+(for example, thesis_30) without altering the meaning of the existing tag.

@@ -204,7 +204,7 @@ All configs share `seed`, `market` (`mid0`, `tick_size`, `dt`, `sigma_mid_ticks`
 - **PPO hyperparams:** lr=3e-4, n_steps=2048, batch=256, epochs=10, gamma=0.999, clip=0.2
 - **Model misspecification:** `A` and `k` are regime-dependent in misspec experiments; `ExecParams` unfrozen; override applied per-step in `env.py` based on `regime_true`
 - **WP6 interpretation:** full sweep is complete. The original informativeness-threshold hypothesis was not supported; `combined` is directionally below `sigma_only` in informative conditions. Categorical-channel degradation/interference is a descriptive interpretation, not a proven mechanism.
-- **Real-data extension:** future/paper work only; it is not part of `thesis_29`.
+- **Current scope:** thesis-draft improvement only. This repository should contain only thesis-related code, evidence, manuscript artifacts, and documentation.
 
 ## Reproducibility Guardrails
 
