@@ -52,6 +52,8 @@ CENTRAL_CLAIM = (
     "consistent with signal redundancy."
 )
 
+EQUATION_COUNTER = 0
+
 
 def set_cell_shading(cell, fill: str) -> None:
     tc_pr = cell._tc.get_or_add_tcPr()
@@ -154,9 +156,10 @@ def add_caption(doc: Document, text: str) -> None:
     p = doc.add_paragraph(text)
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.style = doc.styles["Caption"]
+    p.paragraph_format.keep_together = True
 
 
-def add_figure(doc: Document, key: str, caption: str) -> None:
+def add_figure(doc: Document, key: str, caption: str, width: float = 5.75) -> None:
     path = FIGURES[key]
     if not path.exists():
         p = doc.add_paragraph(f"[Missing figure: {path.relative_to(ROOT)}]")
@@ -164,7 +167,9 @@ def add_figure(doc: Document, key: str, caption: str) -> None:
         return
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.add_run().add_picture(str(path), width=Inches(6.1))
+    p.paragraph_format.keep_with_next = True
+    p.paragraph_format.keep_together = True
+    p.add_run().add_picture(str(path), width=Inches(width))
     add_caption(doc, caption)
 
 
@@ -190,9 +195,11 @@ def add_code_block(doc: Document, title: str, lines: list[str]) -> None:
 
 
 def add_equation(doc: Document, equation: str, definitions: str) -> None:
+    global EQUATION_COUNTER
+    EQUATION_COUNTER += 1
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run(equation)
+    run = p.add_run(f"({EQUATION_COUNTER})  {equation}")
     run.bold = True
     run.font.name = "Cambria Math"
     run._element.rPr.rFonts.set(qn("w:eastAsia"), "Cambria Math")
@@ -248,7 +255,7 @@ def style_document(doc: Document) -> None:
     caption.paragraph_format.space_after = Pt(8)
 
     header = section.header.paragraphs[0]
-    header.text = "HFMM-RL Thesis 31 Template Draft"
+    header.text = "HFMM-RL MSc Thesis Draft"
     header.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     for run in header.runs:
         run.font.size = Pt(9)
@@ -272,19 +279,27 @@ def title_page(doc: Document) -> None:
     doc.add_paragraph()
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = p.add_run("Technical Report Template Adaptation - thesis_31")
+    run = p.add_run("Technical Report Template Adaptation / MSc Thesis Draft")
     run.font.size = Pt(15)
     run.bold = True
     doc.add_paragraph()
     rows = [
-        ["Project", "Synthetic HFMM reinforcement-learning thesis"],
-        ["Draft", "manuscript/thesis_31.docx and manuscript/thesis_31.pdf"],
+        ["Author", "Onur Emiroglu"],
+        ["Programme", "Financial Engineering MSc Programme"],
+        ["Institution", "Karlsruhe Institute of Technology"],
+        ["Supervisor", "[Supervisor to be inserted]"],
+        ["Matriculation No.", "[Matriculation number to be inserted]"],
+        ["Submission / Draft date", "May 2026"],
+        ["Git Repository", "[Repository URL to be inserted]"],
         ["Frozen baseline", "manuscript/thesis_29.pdf, tag thesis-v29-frozen"],
         ["Source draft", "manuscript/thesis_30.pdf / .docx"],
         ["Decision log", "manuscript/decisions_log_13.pdf"],
-        ["Scope", "Template adaptation only; no experiment reruns or figure regeneration"],
     ]
     add_table(doc, ["Field", "Value"], rows, [2200, 7160])
+    p = doc.add_paragraph("Template-adapted draft; frozen evidence is not regenerated.")
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for run in p.runs:
+        run.bold = True
     doc.add_paragraph(CENTRAL_CLAIM)
     doc.add_page_break()
 
@@ -324,6 +339,15 @@ def front_matter(doc: Document) -> None:
             ["m", "Quote skew in ticks."],
             ["A, k", "Poisson fill-intensity scale and decay parameters."],
             ["eta", "Inventory penalty coefficient."],
+            ["gamma", "Avellaneda-Stoikov inventory-risk aversion parameter."],
+            ["tau", "Remaining horizon."],
+            ["lambda(delta)", "Poisson fill intensity at quote distance delta."],
+            ["delta, delta_bid, delta_ask", "Quote distance variables."],
+            ["rho_t(theta)", "PPO probability ratio."],
+            ["A_hat_t", "Advantage estimate."],
+            ["epsilon_t", "Standard-normal innovation in the mid-price process."],
+            ["z_t", "Latent volatility regime."],
+            ["P_ij", "Markov transition probability."],
         ],
         [1600, 7760],
     )
@@ -354,7 +378,7 @@ def front_matter(doc: Document) -> None:
         ],
         [2200, 7160],
     )
-    doc.add_page_break()
+    doc.add_paragraph()
 
 
 def introduction(doc: Document) -> None:
@@ -376,26 +400,52 @@ def introduction(doc: Document) -> None:
     )
     doc.add_heading("1.3 Background and Related Work", level=2)
     doc.add_paragraph(
-        "Classical market-making models, especially the Avellaneda-Stoikov framework and later inventory-risk extensions, "
-        "formalize the tradeoff between spread income and inventory exposure. They provide analytical baselines and clarify "
-        "why volatility and inventory jointly affect reservation prices and spreads."
+        "Classical market-making models provide the inventory-risk foundation for this thesis. A market maker earns spread "
+        "income by posting bid and ask quotes, but execution imbalance creates inventory exposure whose value changes with "
+        "the mid-price. The core control problem is therefore not raw spread capture alone; it is the tradeoff between "
+        "execution probability, volatility risk, and inventory control."
     )
     doc.add_paragraph(
-        "Reinforcement-learning approaches to market making replace closed-form quoting rules with learned policies that "
-        "can condition on state variables, simulated fills, and reward shaping. Prior DRL market-making work motivates the "
-        "use of PPO-style policies, but it also raises a representation question: adding state channels can help only when "
-        "they provide incremental information that the policy can exploit."
+        "Avellaneda and Stoikov (2008) give the canonical analytical reference point: quotes are adjusted through a "
+        "reservation price and spread term that depend on inventory, risk aversion, volatility, horizon, and order-arrival "
+        "intensity. Gueant, Lehalle and Fernandez-Tapia (2013) extend this inventory-control view with tractable market-making "
+        "solutions. In this report, that literature motivates both the AS baseline and the squared-inventory penalty used "
+        "in the PPO reward."
     )
     doc.add_paragraph(
-        "Volatility regimes are a common way to summarize non-stationarity. In this thesis, regimes are generated by a "
-        "three-state Markov process and estimated by rolling realized volatility. The literature motivates regime awareness, "
-        "but the tested design asks a narrower question: whether the categorical regime label improves performance beyond "
-        "the continuous realized-volatility proxy."
+        "Reinforcement-learning market-making studies replace closed-form quote rules with learned policies trained through "
+        "simulated interaction. Spooner et al. (2018) show how RL can learn market-making behavior and why reward design is "
+        "central. Spooner and Savani (2020) extend the discussion toward robustness under adversarially varied conditions. "
+        "These studies motivate learned quoting policies, but the present thesis is narrower: PPO is used as a controlled "
+        "testbed for a state-representation question."
     )
     doc.add_paragraph(
-        "Because the main empirical result is a bounded null/equivalence-style finding, the report uses paired tests and "
-        "TOST equivalence tests rather than relying only on non-significant p-values. This supports a defense-safe reading "
-        "of practical equivalence where the evidence warrants it."
+        "Deep reinforcement learning work with market signals is especially relevant. Gasperov and Kostanjcar (2021) study "
+        "market making with signals through DRL, while Gasperov et al. (2021) summarize broader RL approaches to optimal "
+        "market making. Gasperov and Kostanjcar (2022) use a richer Hawkes-process limit-order-book simulator. The thesis "
+        "uses a simpler Poisson-fill simulator deliberately, because the goal is to isolate whether one added signal channel "
+        "has incremental value."
+    )
+    doc.add_paragraph(
+        "Volatility regimes and non-stationarity are economically meaningful in market making. A higher-volatility state "
+        "can increase inventory risk and change the appropriate quote aggressiveness. The thesis therefore includes a "
+        "three-state Markov volatility process and rolling realized-volatility detector. However, the presence of regimes "
+        "does not automatically imply that a categorical regime label improves a learned policy."
+    )
+    doc.add_paragraph(
+        "The key information-design issue is redundancy. The policy already observes sigma_hat, a continuous realized-volatility "
+        "proxy. A low/medium/high label derived from related volatility information may help if it summarizes information "
+        "not otherwise available, but it may add little if sigma_hat already carries the useful variation for quote placement."
+    )
+    doc.add_paragraph(
+        "This defines the thesis gap. The report does not ask whether volatility matters generally. It asks whether an "
+        "explicit categorical volatility-regime label adds incremental value once sigma_hat is already observed by the PPO "
+        "policy in the controlled synthetic HFMM environment."
+    )
+    doc.add_paragraph(
+        "Finally, the result requires careful null-result interpretation. Lakens (2017) and Lakens, Scheel and Isager (2018) "
+        "motivate equivalence testing as a way to distinguish 'not statistically significant' from 'practically equivalent "
+        "within a stated bound.' This is why the thesis reports both paired t-tests and TOST-style evidence where appropriate."
     )
     doc.add_heading("1.4 Contributions", level=2)
     add_numbered(
@@ -766,9 +816,23 @@ def results(doc: Document) -> None:
         "AS has higher raw equity but carries substantially larger inventory tail risk; therefore the main comparison is "
         "risk-adjusted performance and inventory control, not raw equity alone."
     )
-    add_figure(doc, "fig1", "Figure 1. Main OOS performance and inventory risk, reused from frozen thesis figures.")
-    add_figure(doc, "fig2", "Figure 2. Seed-paired PPO-aware versus PPO-blind comparison.")
+    add_figure(
+        doc,
+        "fig1",
+        "Figure 1. Main WP5 OOS results: PPO variants dominate naive and AS on risk-adjusted performance, while AS carries much larger inventory tail risk.",
+    )
+    add_figure(
+        doc,
+        "fig2",
+        "Figure 2. Seed-paired PPO-aware versus PPO-blind comparison: the estimated regime channel does not create a robust Sharpe-like advantage.",
+        width=5.35,
+    )
+    doc.add_paragraph(
+        "The paired-seed view shows that the aware policy does not dominate the blind policy seed by seed. "
+        "The equity panel even favors the blind policy in the canonical paired test."
+    )
 
+    doc.add_paragraph()
     doc.add_heading("8.2 Five-Variant Ablation", level=2)
     add_table(
         doc,
@@ -786,19 +850,35 @@ def results(doc: Document) -> None:
         "The strongest ablation result is that sigma_only has the highest mean Sharpe-like value, while oracle_full does "
         "not significantly beat it. TOST supports practical equivalence under the +/-0.10 Sharpe-like bound."
     )
+    add_figure(
+        doc,
+        "fig3",
+        "Figure 3. Five-variant ablation summary: sigma_only is the strongest mean Sharpe-like variant, and adding categorical labels does not improve it.",
+        width=5.2,
+    )
+    add_figure(
+        doc,
+        "fig4",
+        "Figure 4. Oracle-label paired-seed comparison: even true regime labels do not reliably improve on sigma_hat alone.",
+        width=5.2,
+    )
+    doc.add_page_break()
+    doc.add_paragraph(
+        "The compact statistical summary below collects the canonical paired tests used to interpret the ablation and robustness results."
+    )
     add_table(
         doc,
         ["Comparison", "Metric or test", "Canonical result", "Defense-safe reading"],
         [
-            ["PPO-aware vs PPO-blind", "Sharpe-like paired t-test", "p = 0.261", "No significant Sharpe improvement from explicit regime labels."],
-            ["PPO-aware vs PPO-blind", "Final equity paired t-test", "p = 0.023", "Final equity favors PPO-blind."],
-            ["ppo_sigma_only vs ppo_oracle_full", "Sharpe-like paired t-test", "p = 0.115", "No significant oracle-label Sharpe improvement over sigma_hat alone."],
-            ["ppo_sigma_only vs ppo_oracle_full", "TOST +/-0.10", "p = 0.00067; 90% CI [-0.001, +0.063]", "Positive evidence of practical equivalence under the stated bound."],
-            ["HMM detector", "Detector accuracy", "81.8%", "Higher detector accuracy still does not create a reliable PPO advantage."],
-            ["Detector robustness", "ANOVA", "p = 0.997", "Detector choice does not explain the null result."],
-            ["Regime-conditional eta", "sigma_only vs combined Sharpe", "p = 0.0016", "Result favors sigma_only."],
+            ["PPO-aware vs PPO-blind", "Sharpe-like paired t-test", "p = 0.261", "No significant Sharpe improvement."],
+            ["PPO-aware vs PPO-blind", "Final equity paired t-test", "p = 0.023", "Favors PPO-blind."],
+            ["ppo_sigma_only vs ppo_oracle_full", "Sharpe-like paired t-test", "p = 0.115", "No oracle-label Sharpe improvement."],
+            ["ppo_sigma_only vs ppo_oracle_full", "TOST +/-0.10", "p = 0.00067; 90% CI [-0.001, +0.063]", "Practical equivalence supported."],
+            ["HMM detector", "Detector accuracy", "81.8%", "Higher accuracy does not create advantage."],
+            ["Detector robustness", "ANOVA", "p = 0.997", "Detector choice does not explain result."],
+            ["Regime-conditional eta", "sigma_only vs combined Sharpe", "p = 0.0016", "Favors sigma_only."],
             ["Mild misspecification", "sigma_only vs oracle_full Sharpe t-test", "p = 0.881", "No significant Sharpe difference."],
-            ["Mild misspecification", "TOST +/-0.05", "p = 0.042", "Practical equivalence is supported under the stated bound."],
+            ["Mild misspecification", "TOST +/-0.05", "p = 0.042", "Practical equivalence supported."],
         ],
         [2400, 2100, 2300, 2560],
     )
@@ -806,8 +886,6 @@ def results(doc: Document) -> None:
         "The t-test results show no significant Sharpe improvement from explicit regime labels, while the TOST result "
         "provides positive evidence of practical equivalence under the stated bound."
     )
-    add_figure(doc, "fig3", "Figure 3. Five-variant ablation summary.")
-    add_figure(doc, "fig4", "Figure 4. Oracle-label paired-seed comparison.")
 
     doc.add_heading("8.3 Detector Robustness", level=2)
     add_table(
@@ -821,7 +899,21 @@ def results(doc: Document) -> None:
         ],
         [1900, 4800, 2660],
     )
-    add_figure(doc, "fig5", "Figure 5. Detector robustness across rv_baseline, rv_dwell, and HMM.")
+    doc.add_paragraph(
+        "The ANOVA statistic is retained as a descriptive robustness summary across detector-specific PPO-aware Sharpe values. "
+        "Because the same seeds are shared across detector conditions, the primary inferential evidence remains the seed-paired "
+        "detector-specific tests; the ANOVA should not be read as the sole formal test of a repeated-measures design."
+    )
+    doc.add_paragraph(
+        "The detector robustness table comes from the w5_detector_full robustness experiment, while the main WP5 OOS table "
+        "in Section 8.1 comes from the w5_main experiment. Small differences in PPO-aware/blind means therefore reflect "
+        "distinct frozen experiment batches, not an inconsistency."
+    )
+    add_figure(
+        doc,
+        "fig5",
+        "Figure 5. Detector robustness: rv_baseline, rv_dwell, and HMM all fail to create a reliable regime-aware PPO advantage.",
+    )
 
     doc.add_heading("8.4 Reward-Shaping and Misspecification Checks", level=2)
     doc.add_paragraph(
@@ -830,8 +922,16 @@ def results(doc: Document) -> None:
         "regime-dependent execution misspecification, sigma_only and oracle_full remain statistically indistinguishable "
         "and practically equivalent under the reported TOST bound."
     )
-    add_figure(doc, "fig6", "Figure 6. Regime-conditional eta summary.")
-    add_figure(doc, "fig7", "Figure 7. Mild model-misspecification summary.")
+    add_figure(
+        doc,
+        "fig6",
+        "Figure 6. Regime-conditional eta summary: changing the reward channel by regime still favors sigma_only over combined.",
+    )
+    add_figure(
+        doc,
+        "fig7",
+        "Figure 7. Mild model-misspecification summary: sigma_only and oracle_full remain close under regime-dependent execution parameters.",
+    )
 
     doc.add_heading("8.5 WP6 Signal-Informativeness Sweep", level=2)
     add_table(
@@ -846,13 +946,36 @@ def results(doc: Document) -> None:
         ],
         [1450, 1600, 1600, 1600, 1600, 1510],
     )
+    doc.add_paragraph("Entries are mean +/- 95% confidence-interval half-width across 20 seeds, not standard deviations.")
     doc.add_paragraph(
         "WP6 did not support the original informativeness-threshold hypothesis within the tested calibration band. "
         "sigma_only remained high under informative conditions, while combined was directionally below sigma_only."
     )
-    add_figure(doc, "fig8", "Figure 8. WP6 monotonic-gap plot.")
-    add_figure(doc, "fig9", "Figure 9. WP6 paired-seed combined versus sigma_only.")
-    add_figure(doc, "fig10", "Figure 10. WP6 paired-seed combined versus regime_only.")
+    doc.add_paragraph(
+        "The WP6 figures should be read as a refinement of the main finding rather than a new mechanism proof: they show "
+        "that the tested sigma_hat degradation path did not reveal a regime-label advantage."
+    )
+    add_figure(
+        doc,
+        "fig8",
+        "Figure 8. WP6 monotonic-gap plot: the expected narrowing of the sigma_only versus combined gap does not appear in the tested calibration band.",
+        width=5.25,
+    )
+    doc.add_paragraph(
+        "The paired-seed views below show whether aggregate differences are broad across seeds or driven by a few runs."
+    )
+    add_figure(
+        doc,
+        "fig9",
+        "Figure 9. WP6 paired-seed combined versus sigma_only: combined is directionally below sigma_only in informative conditions.",
+        width=5.25,
+    )
+    add_figure(
+        doc,
+        "fig10",
+        "Figure 10. WP6 paired-seed combined versus regime_only: this diagnostic bounds how much sigma_hat is used inside the combined variant.",
+        width=5.25,
+    )
 
 
 def metrics_discussion_repro(doc: Document) -> None:
@@ -862,8 +985,8 @@ def metrics_discussion_repro(doc: Document) -> None:
     doc.add_heading("9.2 Sharpe-Like Ratio", level=2)
     add_equation(
         doc,
-        "Sharpe-like = mean(r_t) / std(r_t)",
-        "Here r_t denotes the per-step or per-episode return series used by the project metric convention. This is the primary risk-adjusted performance metric.",
+        "Sharpe-like = mean(g_t) / std(g_t)",
+        "Here g_t denotes the logged per-step PnL or return-like series used by the project metric convention. This is the primary risk-adjusted performance metric.",
     )
     doc.add_heading("9.3 Inventory Tail Risk", level=2)
     add_equation(
@@ -984,6 +1107,26 @@ def metrics_discussion_repro(doc: Document) -> None:
     )
 
 
+def references(doc: Document) -> None:
+    doc.add_heading("References", level=1)
+    refs = [
+        "Avellaneda, M., & Stoikov, S. (2008). High-frequency trading in a limit order book. Quantitative Finance, 8(3), 217-224. https://doi.org/10.1080/14697680701381228",
+        "Gueant, O., Lehalle, C.-A., & Fernandez-Tapia, J. (2013). Dealing with the inventory risk: a solution to the market making problem. Mathematics and Financial Economics, 7, 477-507. https://doi.org/10.1007/s11579-012-0087-0",
+        "Spooner, T., Fearnley, J., Savani, R., & Koukorinis, A. (2018). Market Making via Reinforcement Learning. Proceedings of the 17th International Conference on Autonomous Agents and MultiAgent Systems, 434-442.",
+        "Spooner, T., & Savani, R. (2020). Robust market making via adversarial reinforcement learning. Proceedings of the Twenty-Ninth International Joint Conference on Artificial Intelligence, 4590-4596. https://doi.org/10.24963/ijcai.2020/633",
+        "Gasperov, B., & Kostanjcar, Z. (2021). Market Making With Signals Through Deep Reinforcement Learning. IEEE Access, 9, 61611-61622. https://doi.org/10.1109/ACCESS.2021.3074782",
+        "Gasperov, B., Begusic, S., Posedel Simovic, P., & Kostanjcar, Z. (2021). Reinforcement Learning Approaches to Optimal Market Making. Mathematics, 9(21), 2689. https://doi.org/10.3390/math9212689",
+        "Gasperov, B., & Kostanjcar, Z. (2022). Deep Reinforcement Learning for Market Making Under a Hawkes Process-Based Limit Order Book Model. IEEE Control Systems Letters, 6, 2485-2490. https://doi.org/10.1109/LCSYS.2022.3166446",
+        "Schulman, J., Wolski, F., Dhariwal, P., Radford, A., & Klimov, O. (2017). Proximal Policy Optimization Algorithms. arXiv:1707.06347.",
+        "Lakens, D. (2017). Equivalence tests: A practical primer for t tests, correlations, and meta-analyses. Social Psychological and Personality Science, 8(4), 355-362. https://doi.org/10.1177/1948550617697177",
+        "Lakens, D., Scheel, A. M., & Isager, P. M. (2018). Equivalence testing for psychological research: A tutorial. Advances in Methods and Practices in Psychological Science, 1(2), 259-269. https://doi.org/10.1177/2515245918770963",
+    ]
+    for ref in refs:
+        p = doc.add_paragraph(ref)
+        p.paragraph_format.left_indent = Inches(0.25)
+        p.paragraph_format.first_line_indent = Inches(-0.25)
+
+
 def appendices(doc: Document) -> None:
     doc.add_heading("Appendix A Code Appendix", level=1)
     add_table(
@@ -1030,6 +1173,11 @@ def appendices(doc: Document) -> None:
     )
     add_figure(doc, "figA", "Appendix Figure C1. Regime-wise action distribution diagnostic.")
     add_figure(doc, "figB", "Appendix Figure C2. Regime-wise Sharpe diagnostic.")
+    doc.add_page_break()
+    doc.add_paragraph(
+        "The table below summarizes supporting diagnostics. These items support interpretation and provenance; they do "
+        "not replace the canonical WP5/WP6 evidence chain used for the main claims."
+    )
     add_table(
         doc,
         ["Diagnostic", "Status", "Interpretation"],
@@ -1040,6 +1188,10 @@ def appendices(doc: Document) -> None:
             ["WP6 paired summaries", "Protected evidence", "Supports refined interpretation of the signal-informativeness sweep."],
         ],
         [2800, 2200, 4360],
+    )
+    doc.add_paragraph(
+        "This separation keeps the appendix readable while preserving the boundary between primary experiment evidence and "
+        "supporting diagnostics."
     )
 
 
@@ -1066,6 +1218,7 @@ def main() -> None:
     experimental_setup(doc)
     results(doc)
     metrics_discussion_repro(doc)
+    references(doc)
     appendices(doc)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     doc.save(OUT)
