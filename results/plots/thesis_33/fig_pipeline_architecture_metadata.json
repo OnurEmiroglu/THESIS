@@ -1,0 +1,10 @@
+{
+  "artifact": "fig_pipeline_architecture",
+  "purpose": "methodology illustration only",
+  "generated_at_utc": "2026-06-01T21:39:46.714806+00:00",
+  "no_rerun_statement": "This script does not run PPO, WP5, WP6, detector robustness, ablations, misspecification, or protected evidence pipelines.",
+  "outputs": [
+    "results\\plots\\thesis_33\\fig_pipeline_architecture.png",
+    "results\\plots\\thesis_33\\fig_pipeline_architecture.pdf"
+  ]
+}
