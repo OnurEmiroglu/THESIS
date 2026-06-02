@@ -1,0 +1,50 @@
+{
+  "script_name": "scripts/figures/gen_synthetic_environment_figure.py",
+  "generation_timestamp": "2026-06-01T21:17:19.864336+00:00",
+  "seed": 1,
+  "config_source_path": "config\\w5_main.json",
+  "parameters": {
+    "mid0": 100.0,
+    "tick_size": 0.01,
+    "dt": 0.2,
+    "n_steps": 8000,
+    "train_test_split": 0.7,
+    "train_split_step": 5600,
+    "rv_window": 50,
+    "warmup_steps": 1000,
+    "sigma_mid_ticks_base": 0.8,
+    "sigma_mult": [
+      0.6,
+      1.0,
+      1.8
+    ],
+    "trans_matrix": [
+      [
+        0.9967,
+        0.0023,
+        0.001
+      ],
+      [
+        0.0042,
+        0.9917,
+        0.0041
+      ],
+      [
+        0.001,
+        0.003,
+        0.996
+      ]
+    ],
+    "regime_labels": {
+      "0": "L",
+      "1": "M",
+      "2": "H"
+    }
+  },
+  "note": "Illustrative methodology figure only; not a new performance experiment.",
+  "outputs": {
+    "png": "results\\plots\\thesis_32\\fig_synthetic_environment.png",
+    "pdf": "results\\plots\\thesis_32\\fig_synthetic_environment.pdf",
+    "metadata": "results\\plots\\thesis_32\\fig_synthetic_environment_metadata.json"
+  }
+}
