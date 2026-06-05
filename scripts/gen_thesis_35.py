@@ -127,6 +127,11 @@ def insert_paragraph_after(anchor, text: str = "", style: str | None = None):
     return paragraph
 
 
+def delete_paragraph(paragraph) -> None:
+    paragraph._element.getparent().remove(paragraph._element)
+    paragraph._p = paragraph._element = None
+
+
 def style_caption(paragraph) -> None:
     paragraph.style = "Caption" if "Caption" in [s.name for s in paragraph.part.document.styles] else paragraph.style
     if paragraph.runs:
@@ -212,17 +217,18 @@ def update_title_page(doc: Document) -> list[str]:
 
 def insert_table_of_contents(doc: Document) -> None:
     abstract = find_paragraph(doc, "Abstract")
-    page_break = add_paragraph_before_element(doc, abstract._p)
-    page_break.add_run().add_break(WD_BREAK.PAGE)
-    heading = add_paragraph_before_element(doc, abstract._p, "Contents", style="Heading 1")
+    paragraphs = list(doc.paragraphs)
+    abstract_idx = next(i for i, paragraph in enumerate(paragraphs) if paragraph._p is abstract._p)
+    if abstract_idx > 0:
+        previous = paragraphs[abstract_idx - 1]
+        if not previous.text.strip() and previous._p.xpath(".//w:br"):
+            delete_paragraph(previous)
+    heading = add_paragraph_before_element(doc, abstract._p, "Contents")
+    if heading.runs:
+        heading.runs[0].bold = True
+        heading.runs[0].font.size = Pt(16)
     toc = add_paragraph_before_element(doc, abstract._p)
     add_toc_field(toc)
-    fallback = add_paragraph_before_element(
-        doc,
-        abstract._p,
-        "Static contents fallback: " + "; ".join(MAIN_SECTIONS),
-    )
-    fallback.runs[0].italic = True
     spacer = add_paragraph_before_element(doc, abstract._p)
     spacer.add_run().add_break(WD_BREAK.PAGE)
     heading.paragraph_format.keep_with_next = True
@@ -265,6 +271,14 @@ def add_hyperparameter_protocol(doc: Document) -> None:
     for text in paragraphs:
         style = "Heading 2" if text.startswith("7.6.1") else None
         anchor = insert_paragraph_after(anchor, text, style=style)
+
+
+def remove_duplicate_hyperparameter_paragraph(doc: Document) -> None:
+    old_prefix = "The PPO hyperparameters are held fixed across PPO variants to keep the signal-channel comparison fair."
+    for paragraph in list(doc.paragraphs):
+        if paragraph.text.strip().startswith(old_prefix):
+            delete_paragraph(paragraph)
+            return
 
 
 def strengthen_reproducibility(doc: Document) -> None:
@@ -396,6 +410,7 @@ def main() -> int:
     add_table_captions(doc)
     add_algorithm_blocks(doc)
     add_hyperparameter_protocol(doc)
+    remove_duplicate_hyperparameter_paragraph(doc)
     strengthen_reproducibility(doc)
     expand_appendix_b(doc)
     add_appendix_d(doc)
