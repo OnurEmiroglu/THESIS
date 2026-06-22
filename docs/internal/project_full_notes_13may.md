@@ -6,7 +6,7 @@ Purpose: one high-density project brain for ChatGPT project upload context under
 
 Source precedence:
 
-- Primary base: `docs/internal/project_full_notes_18april.md`.
+- Primary historical base: `docs/internal/archive/project_notes/project_full_notes_18april.md`.
 - Merged current sources: `manuscript/thesis_28.pdf`, `manuscript/decisions_log_12.pdf`, `EVIDENCE_MANIFEST.md`, `docs/wp5/wp5_notes.md`, `docs/wp6/wp6_notes.md`, `docs/wp2/wp2_notes.md`, `README.md`, `CLAUDE.md`.
 - Concise checks from protected CSV summaries and canonical metrics outputs were used only to preserve final numbers. No experiment was rerun and no raw CSV content is dumped here.
 
@@ -501,7 +501,7 @@ Rejected but not uploaded:
 |---|---|
 | `manuscript/thesis_28.docx` | Redundant with PDF for ChatGPT reading; generator included for source provenance. |
 | `manuscript/decisions_log_12.docx` | Redundant with PDF. |
-| `docs/internal/project_full_notes_18april.md` | Superseded by this consolidated 13 May notes file. |
+| `docs/internal/archive/project_notes/project_full_notes_18april.md` | Historical base superseded by this consolidated 13 May notes file. |
 | `docs/wp5/wp5_notes.md` | Key content merged into this file. |
 | `docs/wp6/wp6_notes.md` | Key content merged into this file. |
 | `docs/wp2/wp2_notes.md` | Key content merged into this file. |

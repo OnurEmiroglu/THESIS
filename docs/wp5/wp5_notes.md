@@ -49,7 +49,7 @@ implicitly available in the observation space."
 
 ## 6. Detector Robustness (WP5.3)
 
-Bkz. docs/wp2/wp2_notes.md Section 7 ve docs/internal/project_full_notes_12april.md Section 13.
+Bkz. docs/wp2/wp2_notes.md Section 7 ve docs/internal/project_full_notes_13may.md Section 7.2.
 
 Pilot (3 seeds):
 - rv_baseline: aware=0.850, blind=0.814
